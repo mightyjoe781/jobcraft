@@ -59,8 +59,10 @@ export async function apiFetch<T>(
     if (newToken) {
       return apiFetch<T>(path, options, false);
     }
-    window.location.href = "/login";
-    throw new Error("Session expired");
+    // Don't hard-redirect here — clearTokens() already called inside refreshTokens().
+    // Let React's RequireAuth / useAuth handle the unauthenticated state via
+    // normal React Router navigation (avoids full page reload → infinite loop).
+    throw Object.assign(new Error("Session expired"), { status: 401 });
   }
 
   if (!res.ok) {
