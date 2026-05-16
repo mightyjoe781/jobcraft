@@ -89,8 +89,14 @@ export default function ApplicationsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Remove this job from tracking?")) return;
-    await appApi.deleteApplication(id);
-    setApps((prev) => prev.filter((a) => a.id !== id));
+    try {
+      await appApi.deleteApplication(id);
+      setApps((prev) => prev.filter((a) => a.id !== id));
+      setExpandedId(null);
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      alert(`Failed to delete: ${e.message ?? "unknown error"}`);
+    }
   }
 
   function toggleExpand(id: string, notes: string | null) {
@@ -260,7 +266,7 @@ export default function ApplicationsPage() {
                       />
                       <div className="flex justify-between mt-1.5">
                         <button
-                          onClick={() => handleDelete(app.id)}
+                          onClick={() => void handleDelete(app.id)}
                           className="text-xs text-gray-600 hover:text-red-400 transition-colors"
                         >
                           Remove from tracking
