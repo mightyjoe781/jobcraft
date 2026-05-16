@@ -791,6 +791,9 @@ export default function ApplicationsPage() {
 
   const filteredApps = apps.filter((a) => !hiddenStatuses.has(a.status));
 
+  // Clear selection when selected job is no longer visible due to filter
+  const effectiveSelectedId = filteredApps.find((a) => a.id === selectedId) ? selectedId : null;
+
   function handleUpdate(updated: Application) {
     setApps((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
   }
@@ -809,7 +812,7 @@ export default function ApplicationsPage() {
     }
   }
 
-  const selected = apps.find((a) => a.id === selectedId) ?? null;
+  const selected = apps.find((a) => a.id === effectiveSelectedId) ?? null;
 
   if (loading) {
     return (
@@ -926,7 +929,7 @@ export default function ApplicationsPage() {
               <JobListItem
                 key={app.id}
                 app={app}
-                selected={selectedId === app.id}
+                selected={effectiveSelectedId === app.id}
                 onClick={() => setSelectedId(app.id)}
               />
             ))
