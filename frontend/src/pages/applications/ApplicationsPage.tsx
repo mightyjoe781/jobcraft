@@ -45,7 +45,7 @@ function JobListItem({
   onClick: () => void;
 }) {
   const isOverdue = app.follow_up_date && new Date(app.follow_up_date) < new Date();
-  const daysOpen = Math.floor((Date.now() - new Date(app.created_at).getTime()) / 86_400_000);
+  const createdDate = new Date(app.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
   return (
     <button
@@ -63,7 +63,7 @@ function JobListItem({
         <span className={`text-xs px-1.5 py-0.5 rounded ${STATUS_COLORS[app.status]}`}>
           {STATUS_LABELS[app.status]}
         </span>
-        <span className="text-gray-400 text-xs">{daysOpen}d</span>
+        <span className="text-gray-400 text-xs">{createdDate}</span>
       </div>
     </button>
   );
@@ -693,7 +693,7 @@ function DetailsTab({
           </div>
         </div>
         <textarea value={jdText} onChange={(e) => setJdText(e.target.value)} onBlur={() => void saveJd()}
-          rows={5} placeholder="Paste the job description — used for ATS scoring and skill gap analysis"
+          rows={10} placeholder="Paste the job description — used for ATS scoring and skill gap analysis"
           className={INPUT + " resize-y"} />
       </div>
 
@@ -704,7 +704,7 @@ function DetailsTab({
               void onDelete(app.id);
             }
           }}
-          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+          className="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg px-3 py-1.5 transition-colors"
         >
           Remove from tracking
         </button>
