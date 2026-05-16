@@ -14,7 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Tailor Resume", to: "/tailor" },
   { label: "Analyze", to: "/analyze" },
   { label: "Cover Letters", to: "/cover-letters" },
-  { label: "Applications", to: "/applications" },
+  { label: "Applications", to: "/applications", locked: true },
   { label: "Auto-Apply", to: "/auto-apply", locked: true },
   { label: "Discover Jobs", to: "/discover", locked: true },
 ];

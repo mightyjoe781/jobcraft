@@ -12,14 +12,6 @@ import AnalyzePage from "./pages/analyze/AnalyzePage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import CoverLettersPage from "./pages/cover-letters/CoverLettersPage";
 
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-white">{title}</h1>
-      <p className="text-gray-400 mt-2">This module is being built.</p>
-    </div>
-  );
-}
 
 export default function App() {
   return (
@@ -55,7 +47,16 @@ export default function App() {
         <Route path="/analyze" element={<AnalyzePage />} />
 
         <Route path="/cover-letters" element={<CoverLettersPage />} />
-        <Route path="/applications" element={<PlaceholderPage title="Applications" />} />
+        <Route
+          path="/applications"
+          element={
+            <ComingSoonPage
+              feature="Application Tracker"
+              description="Track every application in a Kanban board, log status changes, and manage follow-ups. Import directly from job boards via browser extension."
+              phase="Coming Soon"
+            />
+          }
+        />
 
         <Route
           path="/auto-apply"
