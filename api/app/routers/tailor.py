@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.models.application import Application
 from app.models.job import Job
 from app.models.resume import BaseResume, ResumeVariant
 from app.models.user import User
@@ -137,6 +138,29 @@ async def start_tailoring(
         modified_tex_path=placeholder_key,
     )
     db.add(variant)
+    await db.flush()  # get variant.id without full commit
+
+    # Upsert application — one per job per user; created automatically on first tailor
+    existing_app = await db.execute(
+        select(Application).where(
+            Application.job_id == body.job_id,
+            Application.user_id == current_user.id,
+        )
+    )
+    app = existing_app.scalar_one_or_none()
+    if not app:
+        db.add(Application(
+            user_id=current_user.id,
+            job_id=body.job_id,
+            resume_variant_id=variant.id,
+            status="tailoring",
+        ))
+    else:
+        # Update linked variant to the latest tailor run
+        app.resume_variant_id = variant.id
+        if app.status == "saved":
+            app.status = "tailoring"
+
     await db.commit()
     await db.refresh(variant)
 

@@ -11,6 +11,7 @@ import TailorPage from "./pages/tailor/TailorPage";
 import AnalyzePage from "./pages/analyze/AnalyzePage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import CoverLettersPage from "./pages/cover-letters/CoverLettersPage";
+import ApplicationsPage from "./pages/applications/ApplicationsPage";
 
 
 export default function App() {
@@ -47,16 +48,7 @@ export default function App() {
         <Route path="/analyze" element={<AnalyzePage />} />
 
         <Route path="/cover-letters" element={<CoverLettersPage />} />
-        <Route
-          path="/applications"
-          element={
-            <ComingSoonPage
-              feature="Application Tracker"
-              description="Track every application in a Kanban board, log status changes, and manage follow-ups. Import directly from job boards via browser extension."
-              phase="Coming Soon"
-            />
-          }
-        />
+        <Route path="/applications" element={<ApplicationsPage />} />
 
         <Route
           path="/auto-apply"
