@@ -138,10 +138,8 @@ async def get_base_resume(
         raise HTTPException(status_code=404, detail="Resume not found")
     tex = (await storage.get(resume.tex_source_path)).decode()
     count = await _variant_count(db, resume.id)
-    out = BaseResumeWithTex.model_validate(resume)
-    out.tex_source = tex
-    out.variant_count = count
-    return out
+    base = _enrich(resume, count)
+    return BaseResumeWithTex(**base.model_dump(), tex_source=tex)
 
 
 @router.post("/resumes/base", response_model=BaseResumeOut, status_code=status.HTTP_201_CREATED)
@@ -340,9 +338,8 @@ async def get_snapshot(
         raise HTTPException(status_code=404, detail="Snapshot not found")
 
     tex = (await storage.get(snap.tex_source_path)).decode()
-    out = SnapshotWithTex.model_validate(snap)
-    out.tex_source = tex
-    return out
+    base = SnapshotOut.model_validate(snap)
+    return SnapshotWithTex(**base.model_dump(), tex_source=tex)
 
 
 # ── AI Fill ────────────────────────────────────────────────────────────────────
