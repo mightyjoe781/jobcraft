@@ -718,15 +718,33 @@ export default function ApplicationsPage() {
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Default: hide closed statuses
+  const [hiddenStatuses, setHiddenStatuses] = useState<Set<AppStatus>>(
+    new Set(["rejected", "withdrawn"])
+  );
+  const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
     appApi.listApplications()
       .then((a) => {
         setApps(a);
-        if (a.length) setSelectedId(a[0].id);
+        const visible = a.filter((x) => !hiddenStatuses.has(x.status));
+        if (visible.length) setSelectedId(visible[0].id);
+        else if (a.length) setSelectedId(a[0].id);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  function toggleStatus(status: AppStatus) {
+    setHiddenStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  }
+
+  const filteredApps = apps.filter((a) => !hiddenStatuses.has(a.status));
 
   function handleUpdate(updated: Application) {
     setApps((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
@@ -766,14 +784,67 @@ export default function ApplicationsPage() {
       {/* ── Left panel: job list ── */}
       <div className="w-72 shrink-0 border-r border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
-          <span className="text-gray-900 font-semibold text-sm">Applications</span>
-          <Link
-            to="/apply"
-            className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
-          >
-            + Apply
-          </Link>
+        <div className="px-4 py-3 border-b border-gray-200 shrink-0">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-900 font-semibold text-sm">
+              Applications
+              {filteredApps.length !== apps.length && (
+                <span className="ml-1.5 text-gray-400 font-normal text-xs">
+                  {filteredApps.length}/{apps.length}
+                </span>
+              )}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowFilter((v) => !v)}
+                className={`text-xs px-2 py-1 rounded-lg border transition-colors ${
+                  showFilter || hiddenStatuses.size > 0
+                    ? "border-indigo-300 bg-indigo-50 text-indigo-600"
+                    : "border-gray-200 text-gray-400 hover:text-gray-700"
+                }`}
+                title="Filter by status"
+              >
+                ⊟ Filter{hiddenStatuses.size > 0 ? ` (${hiddenStatuses.size} hidden)` : ""}
+              </button>
+              <Link
+                to="/apply"
+                className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
+              >
+                + Apply
+              </Link>
+            </div>
+          </div>
+
+          {/* Status multi-select filter */}
+          {showFilter && (
+            <div className="pt-2 pb-1">
+              <p className="text-gray-400 text-xs mb-2">Show statuses:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {STATUS_ORDER.map((s) => {
+                  const hidden = hiddenStatuses.has(s);
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => toggleStatus(s)}
+                      className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
+                        hidden
+                          ? "border-gray-200 text-gray-300 line-through"
+                          : `border-current ${STATUS_COLORS[s]}`
+                      }`}
+                    >
+                      {STATUS_LABELS[s]}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setHiddenStatuses(new Set(["rejected", "withdrawn"]))}
+                className="text-xs text-indigo-500 hover:underline mt-2 block"
+              >
+                Reset to default
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Job list */}
@@ -785,8 +856,18 @@ export default function ApplicationsPage() {
                 Apply to your first job →
               </Link>
             </div>
+          ) : filteredApps.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-gray-400 text-sm mb-2">All jobs are filtered out</p>
+              <button
+                onClick={() => setHiddenStatuses(new Set())}
+                className="text-accent text-xs hover:underline"
+              >
+                Show all
+              </button>
+            </div>
           ) : (
-            apps.map((app) => (
+            filteredApps.map((app) => (
               <JobListItem
                 key={app.id}
                 app={app}
