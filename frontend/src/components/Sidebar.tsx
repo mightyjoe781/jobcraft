@@ -95,20 +95,35 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-200 space-y-1 shrink-0">
-        {/* User Management — elevated item, only for admin */}
+        {/* Admin nav items — only visible to admin */}
         {user?.is_admin && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) =>
-              `flex items-center px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
-                isActive
-                  ? "bg-sidebar-active text-indigo-700"
-                  : "text-gray-600 hover:bg-sidebar-hover hover:text-gray-900"
-              }`
-            }
-          >
-            User Management
-          </NavLink>
+          <>
+            <NavLink
+              to="/admin/stats"
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
+                  isActive
+                    ? "bg-sidebar-active text-indigo-700"
+                    : "text-gray-600 hover:bg-sidebar-hover hover:text-gray-900"
+                }`
+              }
+            >
+              Statistics
+            </NavLink>
+            <NavLink
+              to="/admin"
+              end
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
+                  isActive
+                    ? "bg-sidebar-active text-indigo-700"
+                    : "text-gray-600 hover:bg-sidebar-hover hover:text-gray-900"
+                }`
+              }
+            >
+              User Management
+            </NavLink>
+          </>
         )}
 
         <NavLink
