@@ -95,7 +95,8 @@ export const aiFill = (resumeId: string, background_text: string) =>
   });
 
 // Variants
-export const listVariants = () => apiFetch<Variant[]>("/resumes/variants");
+export const listVariants = (job_id?: string) =>
+  apiFetch<Variant[]>(`/resumes/variants${job_id ? `?job_id=${job_id}` : ""}`);
 export const getVariant = (id: string) => apiFetch<Variant>(`/resumes/variants/${id}`);
 export const getVariantDiff = (id: string) => apiFetch<DiffOut>(`/resumes/variants/${id}/diff`);
 export const deleteVariant = (id: string) =>

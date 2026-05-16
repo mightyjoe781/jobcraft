@@ -6,15 +6,14 @@ interface NavItem {
   to: string;
   locked?: boolean;
   badge?: string;
+  primary?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/dashboard" },
-  { label: "Resumes", to: "/resumes" },
-  { label: "Tailor Resume", to: "/tailor" },
-  { label: "Analyze", to: "/analyze" },
-  { label: "Cover Letters", to: "/cover-letters" },
+  { label: "Apply to Job", to: "/apply", primary: true },
   { label: "Applications", to: "/applications" },
+  { label: "My Resumes", to: "/resumes" },
   { label: "Auto-Apply", to: "/auto-apply", locked: true },
   { label: "Discover Jobs", to: "/discover", locked: true },
 ];
@@ -65,13 +64,20 @@ export default function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) =>
-                `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={({ isActive }) => {
+                if (item.primary) {
+                  return `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                    isActive
+                      ? "bg-accent text-white"
+                      : "bg-accent/20 text-accent hover:bg-accent/30"
+                  }`;
+                }
+                return `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
                     ? "bg-sidebar-active text-white"
                     : "text-gray-400 hover:bg-sidebar-hover hover:text-white"
-                }`
-              }
+                }`;
+              }}
             >
               <span>{item.label}</span>
               {item.badge && (

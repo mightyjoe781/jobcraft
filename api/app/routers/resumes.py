@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, status
 from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -408,15 +408,19 @@ async def upload_base_resume(
 
 @router.get("/resumes/variants", response_model=list[VariantOut])
 async def list_variants(
+    job_id: uuid.UUID | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
+    q = (
         select(ResumeVariant, Job.company, Job.role_title)
         .outerjoin(Job, ResumeVariant.job_id == Job.id)
         .where(ResumeVariant.user_id == current_user.id)
-        .order_by(ResumeVariant.created_at.desc())
     )
+    if job_id:
+        q = q.where(ResumeVariant.job_id == job_id)
+    q = q.order_by(ResumeVariant.created_at.desc())
+    result = await db.execute(q)
     rows = result.all()
     out = []
     for variant, company, role_title in rows:
