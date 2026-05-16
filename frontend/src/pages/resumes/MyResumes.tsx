@@ -114,7 +114,10 @@ export default function MyResumes() {
                 className="px-5 py-3 border-t border-gray-100 flex items-center justify-between"
                 onClick={(e) => e.stopPropagation()}
               >
-                <span className="text-indigo-600 text-xs font-medium group-hover:underline">
+                <span
+                  onClick={() => navigate(`/resumes/editor/${r.id}`)}
+                  className="text-indigo-600 text-xs font-medium group-hover:underline cursor-pointer"
+                >
                   Open editor →
                 </span>
                 <div className="flex items-center gap-3">
