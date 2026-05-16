@@ -268,7 +268,7 @@ export default function AtsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5">Select variant</label>
               {variants.length === 0 ? (
-                <p className="text-sm text-gray-500">No variants yet. Tailor a resume first.</p>
+                <p className="text-sm text-gray-500">No variants yet. Add a job and tailor a resume first.</p>
               ) : (
                 <select
                   value={variantId}

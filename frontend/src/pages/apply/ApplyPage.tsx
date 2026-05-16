@@ -682,11 +682,11 @@ export default function ApplyPage() {
         </div>
       )}
 
-      {/* Step 3 — Tailor settings + streaming progress */}
+      {/* Step 3 — Tailor &amp; Track + streaming progress */}
       {step === 3 && (
         <div className="max-w-2xl mx-auto">
           <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-            Tailor settings
+            Tailor &amp; Track
           </h2>
 
           {tailorError && (

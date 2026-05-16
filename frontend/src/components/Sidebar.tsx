@@ -11,7 +11,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/dashboard" },
-  { label: "Apply to Job", to: "/apply", primary: true },
+  { label: "Track a Job", to: "/apply", primary: true },
   { label: "Applications", to: "/applications" },
   { label: "My Resumes", to: "/resumes" },
   { label: "Auto-Apply", to: "/auto-apply", locked: true },

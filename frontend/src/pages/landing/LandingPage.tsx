@@ -4,7 +4,7 @@ const FEATURES = [
   {
     icon: "✦",
     title: "Job-first workflow",
-    description: "Paste a job URL or description. JobCraft extracts the role, suggests your best base resume, and tailors it in one flow.",
+    description: "Paste a job URL or JD. JobCraft extracts the role, tracks it in one place, and tailors your resume — all in one flow.",
   },
   {
     icon: "◆",
@@ -58,7 +58,7 @@ export default function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 pt-24 pb-20 text-center">
         <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1.5 rounded-full mb-8 border border-indigo-100">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-          AI-powered resume tailoring
+          AI-powered job tracking & resume tailoring
         </div>
 
         <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-gray-900 mb-6 leading-[1.1]">
@@ -75,7 +75,7 @@ export default function LandingPage() {
             to="/register"
             className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
           >
-            Start tailoring for free →
+            Start tracking jobs →
           </Link>
           <Link
             to="/login"
@@ -92,7 +92,7 @@ export default function LandingPage() {
             <div className="flex items-center border-b border-gray-100 px-4 py-2 gap-4">
               <span className="font-semibold text-sm text-gray-900">JobCraft</span>
               <div className="flex gap-1">
-                {["Dashboard", "Apply to Job", "Applications", "My Resumes"].map((item, i) => (
+                {["Dashboard", "Track a Job", "Applications", "My Resumes"].map((item, i) => (
                   <span key={i} className={`text-xs px-2.5 py-1 rounded-md ${i === 1 ? "bg-indigo-600 text-white font-medium" : "text-gray-400"}`}>
                     {item}
                   </span>

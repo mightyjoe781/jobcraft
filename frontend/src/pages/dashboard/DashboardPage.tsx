@@ -172,7 +172,7 @@ function EmptyState() {
           to="/apply"
           className="bg-accent hover:opacity-90 text-white font-semibold px-6 py-3 rounded-lg transition-opacity"
         >
-          Apply to your first job →
+          Track your first job →
         </Link>
         <p className="text-gray-400 text-sm">
           Your job applications will appear here as a pipeline.
@@ -283,7 +283,7 @@ export default function DashboardPage() {
             to="/apply"
             className="bg-accent hover:opacity-90 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-opacity"
           >
-            Apply to a Job →
+            Track a Job →
           </Link>
         </div>
         <EmptyState />
@@ -333,7 +333,7 @@ export default function DashboardPage() {
             to="/apply"
             className="bg-accent hover:opacity-90 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-opacity"
           >
-            Apply to a Job →
+            Track a Job →
           </Link>
         </div>
       </div>

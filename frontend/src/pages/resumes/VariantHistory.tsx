@@ -142,7 +142,7 @@ export default function VariantHistory() {
       ) : variants.length === 0 ? (
         <div className="text-center py-20">
           <p className="text-gray-500 mb-2">No variants yet.</p>
-          <p className="text-gray-600 text-sm">Use Tailor Resume to generate your first tailored output.</p>
+          <p className="text-gray-600 text-sm">Tailor a resume for a job to generate your first tailored output.</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-800">

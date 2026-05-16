@@ -1050,7 +1050,7 @@ export default function ApplicationsPage() {
             <div className="p-6 text-center">
               <p className="text-gray-400 text-sm mb-3">No jobs yet</p>
               <Link to="/apply" className="text-accent text-sm hover:underline">
-                Apply to your first job →
+                Track your first job →
               </Link>
             </div>
           ) : filteredApps.length === 0 ? (
