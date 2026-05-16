@@ -10,7 +10,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/dashboard" },
-  { label: "Template Gallery", to: "/resumes/templates" },
   { label: "My Resumes", to: "/resumes/my" },
   { label: "Variants", to: "/resumes/variants" },
   { label: "Tailor Resume", to: "/tailor" },

@@ -5,7 +5,6 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ComingSoonPage from "./pages/coming-soon/ComingSoonPage";
 import ProfilePage from "./pages/profile/ProfilePage";
-import TemplateGallery from "./pages/resumes/TemplateGallery";
 import MyResumes from "./pages/resumes/MyResumes";
 import ResumeEditor from "./pages/resumes/ResumeEditor";
 import VariantHistory from "./pages/resumes/VariantHistory";
@@ -46,7 +45,7 @@ export default function App() {
           }
         />
 
-        <Route path="/resumes/templates" element={<TemplateGallery />} />
+        <Route path="/resumes/templates" element={<Navigate to="/resumes/my" replace />} />
         <Route path="/resumes/my" element={<MyResumes />} />
         <Route path="/resumes/new" element={<ResumeEditor />} />
         <Route path="/resumes/editor/:id" element={<ResumeEditor />} />

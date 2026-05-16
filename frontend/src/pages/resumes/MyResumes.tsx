@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import * as resumeApi from "../../api/resumes";
 import type { BaseResume } from "../../api/resumes";
 import { PdfViewer } from "../../components/PdfViewer";
+import { TemplatePickerModal } from "../../components/TemplatePickerModal";
 
 function sourceLabel(r: BaseResume): string {
   if (r.source_type === "template") return "From template";
@@ -15,6 +16,7 @@ export default function MyResumes() {
   const [loading, setLoading] = useState(true);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,18 +39,18 @@ export default function MyResumes() {
           <p className="text-gray-400 text-sm">Base resumes you can tailor for specific jobs.</p>
         </div>
         <div className="flex gap-2">
-          <Link
-            to="/resumes/templates"
+          <button
+            onClick={() => setShowTemplatePicker(true)}
             className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg px-4 py-2 transition-colors"
           >
-            Browse templates
-          </Link>
-          <Link
-            to="/resumes/new"
+            From template
+          </button>
+          <button
+            onClick={() => navigate("/resumes/new")}
             className="bg-accent hover:bg-accent-hover text-white text-sm rounded-lg px-4 py-2 transition-colors"
           >
-            + New resume
-          </Link>
+            + Upload .tex
+          </button>
         </div>
       </div>
 
@@ -60,20 +62,20 @@ export default function MyResumes() {
         </div>
       ) : resumes.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-500 mb-4">No resumes yet.</p>
+          <p className="text-gray-500 mb-6">No resumes yet.</p>
           <div className="flex gap-3 justify-center">
-            <Link
-              to="/resumes/templates"
+            <button
+              onClick={() => setShowTemplatePicker(true)}
               className="bg-accent hover:bg-accent-hover text-white text-sm rounded-lg px-5 py-2.5 transition-colors"
             >
               Start from a template
-            </Link>
-            <Link
-              to="/resumes/new"
+            </button>
+            <button
+              onClick={() => navigate("/resumes/new")}
               className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg px-5 py-2.5 transition-colors"
             >
               Upload .tex file
-            </Link>
+            </button>
           </div>
         </div>
       ) : (
@@ -119,6 +121,7 @@ export default function MyResumes() {
         </div>
       )}
 
+      {/* PDF preview modal */}
       {previewId && (
         <div
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6"
@@ -130,7 +133,12 @@ export default function MyResumes() {
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
               <span className="text-white font-medium">PDF Preview</span>
-              <button onClick={() => setPreviewId(null)} className="text-gray-400 hover:text-white text-xl">×</button>
+              <button
+                onClick={() => setPreviewId(null)}
+                className="text-gray-400 hover:text-white text-xl"
+              >
+                ×
+              </button>
             </div>
             <PdfViewer
               apiPath={resumeApi.baseResumePdfUrl(previewId)}
@@ -139,6 +147,11 @@ export default function MyResumes() {
             />
           </div>
         </div>
+      )}
+
+      {/* Template picker modal */}
+      {showTemplatePicker && (
+        <TemplatePickerModal onClose={() => setShowTemplatePicker(false)} />
       )}
     </div>
   );
