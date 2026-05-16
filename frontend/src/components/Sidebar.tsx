@@ -50,16 +50,18 @@ export default function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
         {NAV_ITEMS.map((item) =>
           item.locked ? (
-            <button
-              key={item.to}
-              onClick={() => alert("Coming soon — this feature is in development")}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed text-sm"
-            >
-              <span>{item.label}</span>
-              <span className="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">
-                Soon
-              </span>
-            </button>
+            <div key={item.to} className="relative group">
+              <button
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-300 cursor-not-allowed text-sm"
+              >
+                <span>{item.label}</span>
+                <span className="text-xs bg-gray-100 text-gray-300 px-1.5 py-0.5 rounded">Soon</span>
+              </button>
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
+                Coming soon
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+              </div>
+            </div>
           ) : (
             <NavLink
               key={item.to}

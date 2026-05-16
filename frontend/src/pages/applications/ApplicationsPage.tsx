@@ -594,10 +594,11 @@ function DetailsTab({
   async function saveNotes() {
     setSavingNotes(true);
     try {
-      const updated = await appApi.updateApplication(app.id, {
+      // Don't propagate to parent — notes/referral/followup aren't shown
+      // in the job list, so no need to re-render the whole panel (avoids flicker)
+      await appApi.updateApplication(app.id, {
         notes, referral_contact: referral, follow_up_date: followUp || undefined,
       });
-      onUpdate(updated);
     } finally { setSavingNotes(false); }
   }
 
@@ -607,64 +608,74 @@ function DetailsTab({
     finally { setSavingJd(false); }
   }
 
+  const INPUT = "w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:bg-white focus:border-indigo-400 transition-colors";
+
   return (
-    <div className="p-5 space-y-4">
-      {/* Status quick-set */}
+    <div className="p-5 space-y-5">
+      {/* Status — segmented selector with matching colours */}
       <div>
-        <p className="text-gray-400 text-xs mb-2">Status</p>
+        <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-2">Status</p>
         <div className="flex flex-wrap gap-1.5">
           {STATUS_ORDER.map((s) => (
             <button key={s}
               onClick={async () => { const u = await appApi.updateApplication(app.id, { status: s }); onUpdate(u); }}
-              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${app.status === s ? STATUS_COLORS[s] + " ring-1 ring-current" : "bg-gray-100 text-gray-400 hover:text-gray-900"}`}>
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all border ${
+                app.status === s
+                  ? STATUS_COLORS[s] + " border-current shadow-sm"
+                  : "bg-white text-gray-400 border-gray-200 hover:border-gray-400 hover:text-gray-700"
+              }`}>
               {STATUS_LABELS[s]}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Quick fields — auto-save on blur */}
+      {/* Quick fields */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Referral contact</label>
+          <label className="block text-xs text-gray-500 font-medium mb-1.5">Referral contact</label>
           <input value={referral} onChange={(e) => setReferral(e.target.value)} onBlur={() => void saveNotes()}
-            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            placeholder="Name or email" />
+            className={INPUT} placeholder="Name or email" />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Follow-up date</label>
+          <label className="block text-xs text-gray-500 font-medium mb-1.5">Follow-up date</label>
           <input type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} onBlur={() => void saveNotes()}
-            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+            className={INPUT} />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs text-gray-400 mb-1">Notes</label>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs text-gray-500 font-medium">Notes</label>
+          {savingNotes && <span className="text-xs text-indigo-400">Saving…</span>}
+        </div>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => void saveNotes()}
           rows={3} placeholder="Recruiter name, next steps, interview notes…"
-          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent" />
-        {savingNotes && <p className="text-xs text-gray-400 mt-1">Saving…</p>}
+          className={INPUT + " resize-none"} />
       </div>
 
-      {/* JD */}
+      {/* JD — collapsible to save space */}
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-xs text-gray-400">Job Description</label>
-          <div className="flex items-center gap-2">
-            {app.jd_url && <a href={app.jd_url} target="_blank" rel="noreferrer" className="text-xs text-accent hover:underline">View original ↗</a>}
-            {savingJd && <span className="text-xs text-gray-400">Saving…</span>}
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs text-gray-500 font-medium">Job Description</label>
+          <div className="flex items-center gap-3">
+            {savingJd && <span className="text-xs text-indigo-400">Saving…</span>}
+            {app.jd_url && (
+              <a href={app.jd_url} target="_blank" rel="noreferrer" className="text-xs text-indigo-500 hover:underline">View original ↗</a>
+            )}
           </div>
         </div>
         <textarea value={jdText} onChange={(e) => setJdText(e.target.value)} onBlur={() => void saveJd()}
           rows={5} placeholder="Paste the job description — used for ATS scoring and skill gap analysis"
-          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-accent" />
+          className={INPUT + " resize-y"} />
       </div>
 
-      <div className="pt-1 border-t border-gray-100">
+      <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
         <button onClick={() => { if (confirm("Remove this job from tracking?")) void onDelete(app.id); }}
-          className="text-xs text-gray-400 hover:text-red-600 transition-colors">
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors">
           Remove from tracking
         </button>
+        <p className="text-xs text-gray-300">Fields auto-save on blur</p>
       </div>
     </div>
   );
