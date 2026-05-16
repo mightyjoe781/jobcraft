@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_user_sse
 from app.models.application import Application
 from app.models.job import Job
 from app.models.resume import BaseResume, ResumeVariant
@@ -182,7 +182,7 @@ async def start_tailoring(
 @router.get("/tailor/stream/{variant_id}")
 async def tailor_stream(
     variant_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user_sse),
     db: AsyncSession = Depends(get_db),
 ):
     """SSE endpoint — subscribe to Redis pub/sub for this variant's progress events."""

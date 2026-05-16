@@ -81,7 +81,8 @@ export default function TailorPage() {
       setVariantId(res.variant_id);
       setStreaming(true);
 
-      const es = new EventSource(`/api/tailor/stream/${res.variant_id}`);
+      const token = localStorage.getItem("access_token") ?? "";
+      const es = new EventSource(`/api/tailor/stream/${res.variant_id}?token=${encodeURIComponent(token)}`);
       eventSourceRef.current = es;
 
       es.addEventListener("progress", (e) => {
