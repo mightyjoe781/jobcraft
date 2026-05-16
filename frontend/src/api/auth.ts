@@ -1,14 +1,19 @@
 import { apiFetch } from "./client";
 import type { TokenResponse, User } from "../types";
 
+export async function getAuthConfig(): Promise<{ registration_token_required: boolean }> {
+  return apiFetch<{ registration_token_required: boolean }>("/auth/config");
+}
+
 export async function register(
   email: string,
   password: string,
-  display_name: string
+  display_name: string,
+  registration_token?: string,
 ): Promise<TokenResponse> {
   return apiFetch<TokenResponse>("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password, display_name }),
+    body: JSON.stringify({ email, password, display_name, registration_token: registration_token ?? "" }),
   });
 }
 

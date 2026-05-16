@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.models.user import User
 from app.schemas.auth import (
@@ -34,8 +35,17 @@ def _token_response(user: User, refresh_token: str) -> TokenResponse:
     )
 
 
+@router.get("/config")
+def auth_config():
+    """Public endpoint — tells the frontend whether registration requires a token."""
+    return {"registration_token_required": bool(settings.registration_token)}
+
+
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+    if settings.registration_token and body.registration_token != settings.registration_token:
+        raise HTTPException(status_code=403, detail="Invalid registration token")
+
     existing = await get_user_by_email(db, body.email)
     if existing:
         raise HTTPException(status_code=409, detail="Email already registered")

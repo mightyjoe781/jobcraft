@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getAuthConfig } from "../../api/auth";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function RegisterPage() {
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
+  const [tokenRequired, setTokenRequired] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [registrationToken, setRegistrationToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    getAuthConfig().then((cfg) => setTokenRequired(cfg.registration_token_required));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,8 +28,8 @@ export default function RegisterPage() {
     setError(null);
     setLoading(true);
     try {
-      await signUp(email, password, displayName);
-      navigate("/resumes/my", { replace: true });
+      await signUp(email, password, displayName, registrationToken || undefined);
+      navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
       const e = err as { body?: { detail?: string }; message?: string };
       setError(e.body?.detail ?? e.message ?? "Registration failed");
@@ -53,7 +60,7 @@ export default function RegisterPage() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="Jane Smith"
             />
           </div>
@@ -65,7 +72,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="you@example.com"
             />
           </div>
@@ -78,10 +85,26 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="At least 8 characters"
             />
           </div>
+
+          {tokenRequired && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                Registration token
+              </label>
+              <input
+                type="text"
+                value={registrationToken}
+                onChange={(e) => setRegistrationToken(e.target.value)}
+                required
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent font-mono"
+                placeholder="Contact the admin for a token"
+              />
+            </div>
+          )}
 
           <button
             type="submit"

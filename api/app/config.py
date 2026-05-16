@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = ""
     aws_region: str = "us-east-1"
 
+    # Registration gate — if set, users must provide this token to register.
+    # Leave empty to allow open registration.
+    registration_token: str = ""
+
     # JWT
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 15

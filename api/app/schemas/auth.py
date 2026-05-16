@@ -9,6 +9,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     display_name: str
+    registration_token: str = ""
 
     @field_validator("password")
     @classmethod
