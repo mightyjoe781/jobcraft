@@ -1,0 +1,119 @@
+%% JOBCRAFT template: friggeri-style
+%% Category: creative
+%% ATS-friendly: no (dark header, decorative elements)
+%% Inspired by: Adrien Friggeri's distinctive resume — dark header, light body, recognizable style
+%% Sections: Header, Experience, Education, Skills, Side Projects
+
+\documentclass[a4paper]{article}
+\usepackage[top=0in, bottom=0.6in, left=0in, right=0in]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\definecolor{darkbg}{HTML}{1a1a2e}
+\definecolor{accentblue}{HTML}{4A90D9}
+\definecolor{lighttext}{HTML}{cccccc}
+\definecolor{bodytext}{HTML}{333333}
+
+\begin{document}
+
+%% Dark header
+\noindent\colorbox{darkbg}{\begin{minipage}{\textwidth}
+\vspace{18pt}
+\hspace{20pt}
+%% JOBCRAFT: full name
+{\Huge\color{white}\textbf{Your Name}}
+\hfill
+\begin{minipage}[b]{0.4\textwidth}
+\raggedleft
+%% JOBCRAFT: contact
+{\footnotesize\color{lighttext}
+\href{mailto:you@email.com}{you@email.com} \\
++1 (555) 000-0000 \\
+\href{https://github.com/you}{github.com/you} \\
+\href{https://linkedin.com/in/you}{linkedin.com/in/you}
+}
+\end{minipage}
+\hspace{16pt}
+
+\vspace{4pt}
+\hspace{20pt}
+%% JOBCRAFT: tagline / role
+{\large\color{accentblue} Software Engineer · Distributed Systems · Platform}
+\vspace{14pt}
+\end{minipage}}
+
+\vspace{12pt}
+\hspace{20pt}
+\begin{minipage}{\dimexpr\textwidth-40pt}
+
+%% Experience
+{\color{accentblue}\large\textbf{Experience}}\\[-2pt]
+{\color{accentblue}\rule{\linewidth}{0.5pt}}
+
+\vspace{6pt}
+%% JOBCRAFT: role 1
+\noindent\begin{tabular}{@{}p{0.18\linewidth}p{0.78\linewidth}}
+{\footnotesize\color{gray} 2024 -- now} &
+\textbf{Software Engineer} at \textit{Company Name}, City\\
+& \footnotesize Built job scheduler processing 5M+ tasks/day; p99 latency under 200ms \\
+& \footnotesize Saved \$120K/year via Kubernetes rightsizing and spot instance adoption \\
+& \footnotesize Established code review standards across 4 engineering teams \\
+\end{tabular}
+
+\vspace{6pt}
+%% JOBCRAFT: role 2
+\noindent\begin{tabular}{@{}p{0.18\linewidth}p{0.78\linewidth}}
+{\footnotesize\color{gray} May--Aug 2022} &
+\textbf{SWE Intern} at \textit{Previous Company}, City\\
+& \footnotesize Real-time notification pipeline; 200K users, zero P0 at launch \\
+& \footnotesize Test coverage 55\% → 92\% across 4 microservices \\
+\end{tabular}
+
+\vspace{10pt}
+%% Education
+{\color{accentblue}\large\textbf{Education}}\\[-2pt]
+{\color{accentblue}\rule{\linewidth}{0.5pt}}
+
+\vspace{6pt}
+%% JOBCRAFT: degree
+\noindent\begin{tabular}{@{}p{0.18\linewidth}p{0.78\linewidth}}
+{\footnotesize\color{gray} 2019--2023} &
+\textbf{B.S. Computer Science} — University Name, City \\
+& \footnotesize GPA 3.9/4.0 · Dean's List · Merit Scholar \\
+\end{tabular}
+
+\vspace{10pt}
+%% Side Projects
+{\color{accentblue}\large\textbf{Projects}}\\[-2pt]
+{\color{accentblue}\rule{\linewidth}{0.5pt}}
+
+\vspace{6pt}
+%% JOBCRAFT: projects
+\noindent\begin{tabular}{@{}p{0.18\linewidth}p{0.78\linewidth}}
+{\footnotesize\color{gray} Go · K8s} &
+\textbf{Project Name} — \href{https://github.com/you/project}{\footnotesize github.com/you/project} \\
+& \footnotesize Distributed task scheduler · 500+ stars · adopted by 5+ companies \\[4pt]
+{\footnotesize\color{gray} Python · React} &
+\textbf{Another Project} \\
+& \footnotesize Developer tool · 300+ weekly users · 60+ contributors \\
+\end{tabular}
+
+\vspace{10pt}
+%% Skills
+{\color{accentblue}\large\textbf{Skills}}\\[-2pt]
+{\color{accentblue}\rule{\linewidth}{0.5pt}}
+
+\vspace{6pt}
+%% JOBCRAFT: skills
+\noindent\begin{tabular}{@{}p{0.18\linewidth}p{0.78\linewidth}}
+\textbf{Languages}  & Python · Go · TypeScript · Java · SQL \\[2pt]
+\textbf{Platforms}  & AWS · GCP · Docker · Kubernetes · Terraform \\[2pt]
+\textbf{Databases}  & PostgreSQL · Redis · MongoDB · Elasticsearch \\
+\end{tabular}
+
+\end{minipage}
+\end{document}

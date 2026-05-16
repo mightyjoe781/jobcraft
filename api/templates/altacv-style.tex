@@ -1,0 +1,150 @@
+%% JOBCRAFT template: altacv-style
+%% Category: general
+%% ATS-friendly: no (two-column sidebar)
+%% Inspired by: AltaCV — modern sidebar layout with skill ratings, widely used on Overleaf
+%% Sections: Left — Skills, Education, Strengths | Right — Experience, Projects, Achievements
+
+\documentclass[10pt, a4paper]{article}
+\usepackage[margin=0pt]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\definecolor{sidebar}{HTML}{2D3748}
+\definecolor{accent}{HTML}{38B2AC}
+\definecolor{lightgray}{HTML}{718096}
+
+\newcommand{\skill}[2]{%
+  \noindent\textbf{\footnotesize #1}\\
+  \noindent\begin{minipage}{\dimexpr0.85\linewidth}
+    \vspace{2pt}
+    \colorbox{accent!30}{\hspace{#2\linewidth}\hspace{0pt}}%
+    \colorbox{gray!20}{\hspace{\dimexpr(1-#2)\linewidth - 2\fboxsep}\hspace{0pt}}
+    \vspace{4pt}
+  \end{minipage}\\
+}
+
+\begin{document}
+\noindent
+%% Sidebar (left 32%)
+\begin{minipage}[t]{0.32\textwidth}
+\color{white}
+\colorbox{sidebar}{\begin{minipage}[t][\textheight][t]{\textwidth}
+\vspace{14pt}
+\centering
+
+%% JOBCRAFT: name and title
+{\large\textbf{Your Name}}\\[4pt]
+{\footnotesize\color{accent} Software Engineer}\\[12pt]
+
+%% JOBCRAFT: contact
+{\footnotesize\color{white!80}
+\href{mailto:you@email.com}{you@email.com}\\
++1 (555) 000-0000\\
+City, State\\
+\href{https://github.com/you}{github.com/you}\\
+\href{https://linkedin.com/in/you}{linkedin.com/in/you}
+}
+
+\vspace{14pt}
+\raggedright
+{\small\textbf{\color{accent} SKILLS}}\\[6pt]
+%% JOBCRAFT: skills with proficiency (adjust 0.0–1.0)
+\skill{Python}{0.95}
+\skill{Go}{0.85}
+\skill{TypeScript}{0.80}
+\skill{PostgreSQL}{0.85}
+\skill{Kubernetes}{0.75}
+\skill{AWS}{0.80}
+\skill{React}{0.70}
+
+\vspace{10pt}
+{\small\textbf{\color{accent} EDUCATION}}\\[4pt]
+{\footnotesize
+\textbf{B.S. Computer Science}\\
+University Name\\
+\color{white!70}May 2023 · GPA 3.9
+}
+
+\vspace{10pt}
+{\small\textbf{\color{accent} STRENGTHS}}\\[4pt]
+{\footnotesize
+%% JOBCRAFT: 3-4 personal strengths
+$\bullet$ Systems thinking\\
+$\bullet$ Collaborative leadership\\
+$\bullet$ Bias for action\\
+$\bullet$ Clear written communication
+}
+
+\vspace{10pt}
+{\small\textbf{\color{accent} LANGUAGES}}\\[4pt]
+{\footnotesize
+English (Native)\\
+German (B2)
+}
+
+\end{minipage}}
+\end{minipage}%
+%% Main content (right 68%)
+\begin{minipage}[t]{0.67\textwidth}
+\vspace{14pt}
+\hspace{12pt}
+
+{\small\textbf{EXPERIENCE}}
+\noindent\hspace{12pt}\rule{0.92\textwidth}{0.3pt}
+
+\vspace{4pt}
+\hspace{12pt}
+\begin{minipage}{0.9\textwidth}
+%% JOBCRAFT: most recent role
+\textbf{Software Engineer} \hfill {\footnotesize\color{lightgray} Jan 2024 -- Present}\\
+{\footnotesize\color{lightgray} Company Name · City, State}
+\begin{itemize}[leftmargin=1.2em, noitemsep, topsep=3pt]
+  \item{\footnotesize Built job scheduler processing 5M tasks/day; cut SLA breaches 80\%}
+  \item{\footnotesize Saved \$120K/year via Kubernetes rightsizing and spot instances}
+  \item{\footnotesize Led team of 4; shipped payment feature 2 weeks early}
+\end{itemize}
+
+\vspace{5pt}
+%% JOBCRAFT: previous role
+\textbf{Software Engineering Intern} \hfill {\footnotesize\color{lightgray} May -- Aug 2022}\\
+{\footnotesize\color{lightgray} Previous Company · City, State}
+\begin{itemize}[leftmargin=1.2em, noitemsep, topsep=3pt]
+  \item{\footnotesize Real-time notification pipeline serving 200K users at launch}
+  \item{\footnotesize Test coverage 55\% → 92\% across 4 microservices}
+\end{itemize}
+\end{minipage}
+
+\vspace{10pt}
+\hspace{12pt}
+{\small\textbf{PROJECTS}}
+\noindent\hspace{12pt}\rule{0.92\textwidth}{0.3pt}
+
+\vspace{4pt}
+\hspace{12pt}
+\begin{minipage}{0.9\textwidth}
+%% JOBCRAFT: projects
+\textbf{Project Name} {\footnotesize\color{lightgray}· Go, PostgreSQL, K8s}\\
+\begin{itemize}[leftmargin=1.2em, noitemsep, topsep=2pt]
+  \item{\footnotesize 500+ GitHub stars; horizontally scales to 10× load}
+\end{itemize}
+\end{minipage}
+
+\vspace{10pt}
+\hspace{12pt}
+{\small\textbf{ACHIEVEMENTS}}
+\noindent\hspace{12pt}\rule{0.92\textwidth}{0.3pt}
+
+\vspace{4pt}
+\hspace{12pt}
+{\footnotesize
+%% JOBCRAFT: awards / achievements
+$\star$ Dean's List, all semesters\\
+$\star$ HackMIT 2022 — 1st Place, Infrastructure Track\\
+$\star$ Merit Scholarship, \$10,000/year
+}
+
+\end{minipage}
+\end{document}

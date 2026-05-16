@@ -1,0 +1,102 @@
+%% JOBCRAFT template: developer-cv
+%% Category: engineering
+%% ATS-friendly: yes
+%% A GitHub-first layout for engineers who want their open-source work front and centre
+%% Sections: Header, Open Source / Projects, Experience, Education, Stack
+
+\documentclass[10.5pt, letterpaper]{article}
+\usepackage[top=0.55in, bottom=0.55in, left=0.6in, right=0.6in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\definecolor{accent}{HTML}{0969DA}
+
+\titleformat{\section}{\normalfont\normalsize\bfseries\color{accent}}{}{0em}{\uppercase}[\vspace{-5pt}\color{accent}\rule{\linewidth}{0.4pt}]
+\titlespacing{\section}{0pt}{8pt}{4pt}
+
+\newcommand{\role}[4]{%
+  \noindent\textbf{#1} \hfill {\small\textit{#2}}\\
+  \textit{\small #3} \hfill {\small #4}
+}
+
+\begin{document}
+
+%% JOBCRAFT: header
+\begin{center}
+  {\LARGE\textbf{Your Name}}\\[3pt]
+  {\small
+    %% JOBCRAFT: contact + links — put GitHub/portfolio prominently
+    \href{https://github.com/you}{\textbf{github.com/you}}
+    $\cdot$ \href{https://yoursite.com}{yoursite.com}
+    $\cdot$ \href{mailto:you@email.com}{you@email.com}
+    $\cdot$ +1 (555) 000-0000
+    $\cdot$ City, State
+  }
+\end{center}
+
+\section{Open Source \& Projects}
+
+%% JOBCRAFT: project 1 — put your most impressive project first
+\noindent\textbf{Project Name}
+\hfill
+\href{https://github.com/you/project}{\small\color{accent}github.com/you/project}
+{\small $\cdot$ \textbf{1.2k ★} $\cdot$ Go $\cdot$ PostgreSQL $\cdot$ Kubernetes}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Distributed task scheduler processing \textbf{100K jobs/day}; 99.99\% uptime over 18 months in production
+  \item Adopted by \textbf{10+ companies}; top contributor to the Awesome Go list
+  \item Implements Raft consensus from scratch; full test suite with chaos testing via Toxiproxy
+\end{itemize}
+
+\vspace{5pt}
+%% JOBCRAFT: project 2
+\noindent\textbf{Another Project}
+\hfill
+\href{https://github.com/you/project2}{\small\color{accent}github.com/you/project2}
+{\small $\cdot$ \textbf{400 ★} $\cdot$ Python $\cdot$ FastAPI $\cdot$ React}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Developer productivity tool with \textbf{500+ weekly active users} and 80+ contributors
+  \item Featured in \textit{Real Python} newsletter and \textit{Python Weekly} digest
+\end{itemize}
+
+\vspace{5pt}
+%% JOBCRAFT: project 3 (or contribution to major OSS)
+\noindent\textbf{Contribution — kubernetes/kubernetes}
+{\small $\cdot$ Go}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Fixed a scheduler bug causing pod eviction storms on node pressure; merged in v1.28
+\end{itemize}
+
+\section{Experience}
+
+%% JOBCRAFT: most recent role
+\role{Software Engineer}{Jan 2024 -- Present}{Company Name}{City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  \item Owned the platform team's job scheduling infrastructure; reduced tail latency by 35\%
+  \item Migrated 8 services from ECS to Kubernetes, saving \$80K/year; wrote internal migration guide adopted by 3 other teams
+\end{itemize}
+
+\vspace{5pt}
+%% JOBCRAFT: previous role
+\role{Software Engineering Intern}{May 2022 -- Aug 2022}{Previous Company}{City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  \item Built notification service in Go; 200K users, zero incidents post-launch
+\end{itemize}
+
+\section{Education}
+
+%% JOBCRAFT: degree
+\role{B.S. Computer Science · GPA 3.9/4.0}{May 2023}{University Name}{City, State}
+
+\section{Stack}
+
+%% JOBCRAFT: flat skill list — keyword-dense for ATS
+\noindent\textbf{Primary:} Go, Python, TypeScript \quad
+\textbf{Infra:} Kubernetes, Docker, Terraform, Helm, AWS, GCP \\
+\textbf{Data:} PostgreSQL, Redis, Kafka, Elasticsearch \quad
+\textbf{Observability:} Prometheus, Grafana, Datadog, OpenTelemetry
+
+\end{document}

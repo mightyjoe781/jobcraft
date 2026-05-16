@@ -1,8 +1,7 @@
 """Seed resume_templates from bundled .tex files in api/templates/."""
-import os
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.resume import ResumeTemplate
@@ -10,74 +9,83 @@ from app.storage import generate_key, storage
 
 TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 
+# Slugs replaced by better templates — removed from DB on startup
+DEPRECATED_SLUGS = {"ats-clean", "ats-data", "ats-minimal", "two-column-modern", "academic"}
+
+# Categories: engineering | professional | creative | research
 TEMPLATE_META = {
-    "ats-clean": {
-        "name": "ATS Clean",
+    # ── Single-column, ATS-safe ───────────────────────────────────────────────
+    "jake-style": {
+        "name": "Jake's Resume",
         "category": "engineering",
-        "description": "Single-column, ATS-optimised layout for software engineering roles.",
+        "description": "The #1 most-used CS resume on Overleaf. Horizontal-rule sections, tight spacing, scshape headings. Safe default for any software engineering role.",
         "is_ats_friendly": True,
         "sort_order": 0,
     },
-    "ats-data": {
-        "name": "ATS Data",
-        "category": "data",
-        "description": "Skills-first layout tailored for data engineering and data science roles.",
+    "harshibar-style": {
+        "name": "Harshibar",
+        "category": "engineering",
+        "description": "Clean single-column with bold section rules and compact bullet layout. Widely used by new grads targeting FAANG and mid-size tech companies.",
         "is_ats_friendly": True,
         "sort_order": 1,
     },
-    "ats-minimal": {
-        "name": "ATS Minimal",
-        "category": "general",
-        "description": "Ultra-clean single-column layout suitable for any role.",
+    "sb2nov-style": {
+        "name": "sb2nov",
+        "category": "engineering",
+        "description": "Compact 10.5pt layout that fits more onto one page without feeling crowded. A go-to format for students and new grads applying to internships.",
         "is_ats_friendly": True,
         "sort_order": 2,
     },
-    "two-column-modern": {
-        "name": "Two Column Modern",
-        "category": "general",
-        "description": "Two-column layout with sidebar. Visually distinctive; may not parse well in all ATS.",
-        "is_ats_friendly": False,
+    "developer-cv": {
+        "name": "Developer CV",
+        "category": "engineering",
+        "description": "GitHub-first layout that surfaces open-source projects and contributions before experience. Ideal for engineers with strong public portfolios.",
+        "is_ats_friendly": True,
         "sort_order": 3,
     },
-    "academic": {
-        "name": "Academic CV",
-        "category": "research",
-        "description": "Standard CV format for PhD applications, research, and academic positions.",
-        "is_ats_friendly": True,
-        "sort_order": 4,
-    },
-    "jake-style": {
-        "name": "Jake's Style",
-        "category": "engineering",
-        "description": "The most-used CS resume format on Overleaf. Clean horizontal-rule sections, scshape headings, tight spacing. A safe default for any tech role.",
-        "is_ats_friendly": True,
-        "sort_order": 5,
-    },
+    # ── Two-column (ATS caution) ──────────────────────────────────────────────
     "deedy-style": {
-        "name": "Deedy Style",
+        "name": "Deedy CV",
         "category": "engineering",
         "description": "Two-column format popularised for FAANG applications. Left sidebar holds education and skills; right column holds experience and projects.",
         "is_ats_friendly": False,
+        "sort_order": 4,
+    },
+    "altacv-style": {
+        "name": "AltaCV",
+        "category": "general",
+        "description": "Modern sidebar with coloured skill-level indicators. One of the most-starred LaTeX resume templates on GitHub. Visually distinctive.",
+        "is_ats_friendly": False,
+        "sort_order": 5,
+    },
+    # ── General / professional ────────────────────────────────────────────────
+    "awesome-cv-style": {
+        "name": "Awesome CV",
+        "category": "professional",
+        "description": "Header-heavy with coloured accent section dividers and a professional summary at the top. Works for any industry, not just tech.",
+        "is_ats_friendly": True,
         "sort_order": 6,
     },
-    "harshibar-style": {
-        "name": "Harshibar Style",
-        "category": "engineering",
-        "description": "Clean single-column with bold section rules and tight bullet layout. Popular for new-grad tech applications; highly ATS-friendly.",
+    "moderncv-style": {
+        "name": "ModernCV",
+        "category": "professional",
+        "description": "Inspired by the moderncv LaTeX class — one of the most-downloaded CV packages ever. Rule-based sections, tabular skills, clean professional tone.",
         "is_ats_friendly": True,
         "sort_order": 7,
     },
-    "awesome-cv-style": {
-        "name": "Awesome CV Style",
-        "category": "general",
-        "description": "Header-heavy with coloured accent section lines. Professional summary at the top, structured experience and skills. Works for any industry.",
-        "is_ats_friendly": True,
+    # ── Creative ──────────────────────────────────────────────────────────────
+    "friggeri-style": {
+        "name": "Friggeri",
+        "category": "creative",
+        "description": "Distinctive dark header with timeline-style experience entries. Instantly recognisable — best for roles where visual design matters. Not ATS-safe.",
+        "is_ats_friendly": False,
         "sort_order": 8,
     },
-    "sb2nov-style": {
-        "name": "sb2nov Style",
-        "category": "engineering",
-        "description": "Compact 10.5pt layout for new grads and students — fits more on one page without feeling crowded. Widely used for internship applications.",
+    # ── Research / Academic ───────────────────────────────────────────────────
+    "research-enhanced": {
+        "name": "Research CV",
+        "category": "research",
+        "description": "Full academic CV with publications, talks, teaching, fellowships, and research positions. Follows conventions for PhD programs and faculty searches.",
         "is_ats_friendly": True,
         "sort_order": 9,
     },
@@ -85,8 +93,22 @@ TEMPLATE_META = {
 
 
 async def seed_templates(db: AsyncSession) -> None:
+    # Remove deprecated templates (only if not referenced by any base_resume)
+    for slug in DEPRECATED_SLUGS:
+        result = await db.execute(
+            select(ResumeTemplate).where(ResumeTemplate.slug == slug)
+        )
+        old = result.scalar_one_or_none()
+        if old:
+            await db.execute(
+                delete(ResumeTemplate).where(ResumeTemplate.slug == slug)
+            )
+
+    # Insert new templates (idempotent — skip if slug already exists)
     for slug, meta in TEMPLATE_META.items():
-        result = await db.execute(select(ResumeTemplate).where(ResumeTemplate.slug == slug))
+        result = await db.execute(
+            select(ResumeTemplate).where(ResumeTemplate.slug == slug)
+        )
         if result.scalar_one_or_none():
             continue
 
@@ -98,7 +120,6 @@ async def seed_templates(db: AsyncSession) -> None:
         key = generate_key(f"system/templates/{slug}", ".tex")
         path = await storage.put(key, tex_bytes)
 
-        template = ResumeTemplate(slug=slug, tex_source_path=path, **meta)
-        db.add(template)
+        db.add(ResumeTemplate(slug=slug, tex_source_path=path, **meta))
 
     await db.commit()

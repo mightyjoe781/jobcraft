@@ -4,7 +4,7 @@ import * as resumeApi from "../api/resumes";
 import { PdfViewer } from "./PdfViewer";
 import type { Template } from "../api/resumes";
 
-const CATEGORIES = ["all", "engineering", "data", "research", "general"] as const;
+const CATEGORIES = ["all", "engineering", "professional", "general", "creative", "research"] as const;
 
 interface Props {
   onClose: () => void;

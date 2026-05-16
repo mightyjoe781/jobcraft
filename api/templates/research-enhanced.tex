@@ -1,0 +1,123 @@
+%% JOBCRAFT template: research-enhanced
+%% Category: research
+%% ATS-friendly: yes
+%% A complete academic CV for PhD students, researchers, and faculty applicants
+%% Sections: Education, Research, Publications, Talks, Teaching, Awards, Skills
+
+\documentclass[11pt, a4paper]{article}
+\usepackage[top=0.85in, bottom=0.85in, left=1in, right=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\titleformat{\section}{\normalfont\large\bfseries}{}{0em}{}[\vspace{-6pt}\rule{\linewidth}{0.5pt}\vspace{2pt}]
+\titlespacing{\section}{0pt}{12pt}{5pt}
+
+\begin{document}
+
+%% JOBCRAFT: name, institution, contact
+\begin{center}
+  {\LARGE\textbf{Your Name}}\\[5pt]
+  %% JOBCRAFT: affiliation and contact
+  Department of Computer Science · University Name\\[3pt]
+  \small
+  \href{mailto:you@university.edu}{you@university.edu} \quad
+  \href{https://yoursite.com}{yoursite.com} \quad
+  \href{https://scholar.google.com/citations?user=XXXXX}{Google Scholar} \quad
+  \href{https://github.com/you}{GitHub}
+\end{center}
+
+\section{Education}
+
+%% JOBCRAFT: PhD info
+\noindent\textbf{Ph.D., Computer Science} \hfill \textit{Expected May 2026}\\
+University Name, City, State\\
+Advisor: Prof.\ Name \quad Co-advisor: Prof.\ Name\\
+Thesis: \textit{Title of Your Dissertation}
+
+\vspace{5pt}
+%% JOBCRAFT: undergrad
+\noindent\textbf{B.S., Computer Science} \hfill \textit{May 2020}\\
+University Name, City, State \quad GPA: 3.95/4.0 · Summa Cum Laude
+
+\section{Research Interests}
+
+%% JOBCRAFT: research areas
+Distributed Systems, Machine Learning Systems, Program Analysis, Human-Computer Interaction
+
+\section{Publications}
+
+%% JOBCRAFT: publications — reverse chronological; bold your name
+\begin{enumerate}[leftmargin=*, noitemsep, topsep=2pt]
+  \item \textbf{Your Name}, Co-author A, Co-author B.
+    ``Title of Your Best Paper.''
+    \textit{Proceedings of SOSP 2024}, pp. 1--16.
+    \href{https://doi.org/xxxxx}{doi:xxxxx}
+
+  \item \textbf{Your Name}, Co-author A.
+    ``Second Paper Title.''
+    \textit{OSDI 2023}, pp. 1--14.
+
+  \item Co-author A, \textbf{Your Name}, Co-author B.
+    ``Workshop Paper Title.''
+    \textit{HotOS 2023} (workshop).
+\end{enumerate}
+
+\section{Research Experience}
+
+%% JOBCRAFT: research positions
+\noindent\textbf{Graduate Research Assistant} \hfill \textit{Sep 2020 -- Present}\\
+\textit{Systems Research Group}, University Name\\
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  \item Developed a novel approach to X that achieves Y improvement on the Z benchmark
+  \item Supervised 3 undergraduate researchers; 2 co-authored papers
+\end{itemize}
+
+\vspace{5pt}
+%% JOBCRAFT: research internship
+\noindent\textbf{Research Intern} \hfill \textit{May -- Aug 2022}\\
+\textit{Research Lab}, Company Name\\
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  \item Worked on large-scale ML infrastructure; results contributed to NeurIPS 2022 paper
+\end{itemize}
+
+\section{Talks \& Presentations}
+
+%% JOBCRAFT: invited talks and conference presentations
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item ``Title of Your Talk,'' \textit{SOSP 2024}, November 2024
+  \item ``Poster Title,'' \textit{OSDI 2023}, July 2023
+  \item ``Talk Title,'' Systems Seminar, University Name, March 2023
+\end{itemize}
+
+\section{Teaching}
+
+%% JOBCRAFT: TA and teaching roles
+\noindent\textbf{Teaching Assistant} — CS 6.824: Distributed Systems \hfill \textit{Fall 2023}\\
+University Name · 90 students · Student rating: 4.9/5.0
+
+\vspace{5pt}
+\noindent\textbf{Teaching Assistant} — CS 6.031: Software Construction \hfill \textit{Spring 2022}\\
+University Name · Led weekly recitations of 20 students
+
+\section{Honors \& Awards}
+
+%% JOBCRAFT: fellowships, awards, scholarships
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item NSF Graduate Research Fellowship \hfill 2021
+  \item Best Paper Award — HotOS 2023 \hfill 2023
+  \item University Graduate Fellowship — \$30,000/year \hfill 2020 -- 2024
+  \item Summa Cum Laude, B.S. Computer Science \hfill 2020
+\end{itemize}
+
+\section{Technical Skills}
+
+%% JOBCRAFT: research-relevant technical skills
+\noindent\textbf{Languages:} Python, C++, Go, Rust, Java, R, MATLAB\\
+\textbf{Systems:} Linux, QEMU, eBPF, DPDK, RDMA\\
+\textbf{ML Frameworks:} PyTorch, JAX, Hugging Face Transformers\\
+\textbf{Tools:} Git, LaTeX, SLURM, Docker, Kubernetes, Perf, Valgrind
+
+\end{document}

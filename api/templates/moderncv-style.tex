@@ -1,0 +1,92 @@
+%% JOBCRAFT template: moderncv-style
+%% Category: professional
+%% ATS-friendly: yes
+%% Inspired by: moderncv LaTeX class (banking style) — one of the most downloaded CV packages
+%% Sections: Personal, Education, Experience, Skills, Languages
+
+\documentclass[11pt, a4paper]{article}
+\usepackage[top=0.8in, bottom=0.8in, left=0.9in, right=0.9in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\definecolor{rule}{HTML}{1F5C99}
+
+\newcommand{\cvsection}[1]{%
+  \vspace{8pt}
+  \noindent{\large\textbf{#1}}%
+  \hspace{4pt}{\color{rule}\rule[0.5ex]{\dimexpr\linewidth-\widthof{\large\textbf{#1}}-8pt}{1.2pt}}%
+  \vspace{4pt}
+}
+
+\newcommand{\cventry}[5]{%
+  \noindent\textbf{#1} \hfill \textit{#2} \\
+  \textit{#3} \hfill #4 \\
+  \ifx&#5&\else\vspace{2pt}\noindent #5\fi
+}
+
+\begin{document}
+
+%% JOBCRAFT: header — name and job title
+\begin{center}
+  {\Huge\textbf{Your Name}}\\[4pt]
+  %% JOBCRAFT: job title
+  {\large Software Engineer}\\[6pt]
+  \small
+  %% JOBCRAFT: contact details
+  \href{mailto:you@email.com}{you@email.com} \quad
+  +1 (555) 000-0000 \quad
+  City, State \quad
+  \href{https://linkedin.com/in/you}{linkedin.com/in/you}
+\end{center}
+
+\vspace{4pt}
+{\color{rule}\noindent\rule{\linewidth}{1.5pt}}
+\vspace{4pt}
+
+\cvsection{Education}
+
+%% JOBCRAFT: degree
+\cventry{University Name}{May 2023}{B.S. Computer Science}{City, State}{
+  GPA: 3.9/4.0 \quad
+  Dean's List \quad
+  Thesis: \textit{Distributed Consensus in Byzantine Fault-Tolerant Systems}
+}
+
+\cvsection{Experience}
+
+%% JOBCRAFT: most recent role
+\cventry{Software Engineer}{Jan 2024 -- Present}{Company Name}{City, State}{}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  \item Designed and shipped distributed job scheduler handling \textbf{5M tasks/day}; reduced SLA breaches by 80\%
+  \item Cut infrastructure spend by \$120K/year through Kubernetes rightsizing and spot instance migration
+  \item Established team-wide engineering standards (code review, incident runbooks, on-call rotations)
+\end{itemize}
+
+\vspace{5pt}
+%% JOBCRAFT: previous role
+\cventry{Software Engineering Intern}{May -- Aug 2022}{Previous Company}{City, State}{}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  \item Built real-time notification pipeline (WebSockets + Redis) serving 200K users; zero P0 at launch
+  \item Raised test coverage from 55\% to 92\% across 4 microservices; eliminated recurring regression class
+\end{itemize}
+
+\cvsection{Skills}
+
+\noindent
+\begin{tabular}{@{}p{0.18\linewidth}p{0.78\linewidth}}
+  \textbf{Languages}   & Python, Go, TypeScript, Java, SQL, Bash \\[2pt]
+  \textbf{Frameworks}  & FastAPI, React, gRPC, Kafka, Spring Boot \\[2pt]
+  \textbf{Cloud}       & AWS (EC2, S3, RDS, Lambda), GCP, Docker, Kubernetes, Terraform \\[2pt]
+  \textbf{Databases}   & PostgreSQL, Redis, MongoDB, Elasticsearch \\
+\end{tabular}
+
+\cvsection{Languages}
+%% JOBCRAFT: spoken languages
+English (native) \quad German (intermediate, B2)
+
+\end{document}
