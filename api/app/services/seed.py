@@ -46,6 +46,41 @@ TEMPLATE_META = {
         "is_ats_friendly": True,
         "sort_order": 4,
     },
+    "jake-style": {
+        "name": "Jake's Style",
+        "category": "engineering",
+        "description": "The most-used CS resume format on Overleaf. Clean horizontal-rule sections, scshape headings, tight spacing. A safe default for any tech role.",
+        "is_ats_friendly": True,
+        "sort_order": 5,
+    },
+    "deedy-style": {
+        "name": "Deedy Style",
+        "category": "engineering",
+        "description": "Two-column format popularised for FAANG applications. Left sidebar holds education and skills; right column holds experience and projects.",
+        "is_ats_friendly": False,
+        "sort_order": 6,
+    },
+    "harshibar-style": {
+        "name": "Harshibar Style",
+        "category": "engineering",
+        "description": "Clean single-column with bold section rules and tight bullet layout. Popular for new-grad tech applications; highly ATS-friendly.",
+        "is_ats_friendly": True,
+        "sort_order": 7,
+    },
+    "awesome-cv-style": {
+        "name": "Awesome CV Style",
+        "category": "general",
+        "description": "Header-heavy with coloured accent section lines. Professional summary at the top, structured experience and skills. Works for any industry.",
+        "is_ats_friendly": True,
+        "sort_order": 8,
+    },
+    "sb2nov-style": {
+        "name": "sb2nov Style",
+        "category": "engineering",
+        "description": "Compact 10.5pt layout for new grads and students — fits more on one page without feeling crowded. Widely used for internship applications.",
+        "is_ats_friendly": True,
+        "sort_order": 9,
+    },
 }
 
 

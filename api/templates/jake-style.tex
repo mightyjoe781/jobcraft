@@ -1,0 +1,135 @@
+%% JOBCRAFT template: jake-style
+%% Category: engineering
+%% ATS-friendly: yes
+%% Inspired by: Jake Gutierrez's widely-used CS resume format
+%% Sections: Education, Experience, Projects, Skills
+
+\documentclass[letterpaper,11pt]{article}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage[T1]{fontenc}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+\titleformat{\section}{\vspace{-4pt}\scshape\raggedright\large}{}{0em}{}[\color{black}\titlerule\vspace{-5pt}]
+
+\newcommand{\resumeItem}[1]{\item\small{#1\vspace{-2pt}}}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+  \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+    \textbf{#1} & #2 \\
+    \textit{\small#3} & \textit{\small#4} \\
+  \end{tabular*}\vspace{-7pt}}
+\newcommand{\resumeProjectHeading}[2]{
+  \item
+  \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+    \small#1 & #2 \\
+  \end{tabular*}\vspace{-7pt}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in,label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+
+\begin{document}
+
+%% JOBCRAFT: full name, contact info
+\begin{center}
+  \textbf{\Huge \scshape Your Name} \\ \vspace{1pt}
+  \small +1 (555) 000-0000 $|$
+  \href{mailto:you@email.com}{\underline{you@email.com}} $|$
+  \href{https://linkedin.com/in/yourprofile}{\underline{linkedin.com/in/yourprofile}} $|$
+  \href{https://github.com/yourhandle}{\underline{github.com/yourhandle}}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+\resumeSubHeadingListStart
+  %% JOBCRAFT: university, graduation year, degree, GPA
+  \resumeSubheading
+    {University Name}{City, State}
+    {Bachelor of Science in Computer Science, GPA: 3.9/4.0}{Aug 2019 -- May 2023}
+\resumeSubHeadingListEnd
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+\resumeSubHeadingListStart
+
+  %% JOBCRAFT: most recent role
+  \resumeSubheading
+    {Software Engineer}{Jan 2024 -- Present}
+    {Company Name}{City, State (or Remote)}
+    \resumeItemListStart
+      %% JOBCRAFT: bullet points — action verb + metric
+      \resumeItem{Built and scaled REST APIs handling 5M+ daily requests using Go and PostgreSQL}
+      \resumeItem{Reduced deployment time by 60\% by migrating CI/CD pipelines to GitHub Actions}
+      \resumeItem{Led cross-functional team of 4 engineers to deliver a payment feature ahead of schedule}
+    \resumeItemListEnd
+
+  %% JOBCRAFT: previous role
+  \resumeSubheading
+    {Software Engineering Intern}{May 2022 -- Aug 2022}
+    {Previous Company}{City, State}
+    \resumeItemListStart
+      \resumeItem{Developed a real-time notification service using WebSockets and Redis, reducing latency by 40\%}
+      \resumeItem{Wrote unit and integration tests achieving 90\% code coverage across 3 microservices}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+%-----------PROJECTS-----------
+\section{Projects}
+\resumeSubHeadingListStart
+
+  %% JOBCRAFT: project 1
+  \resumeProjectHeading
+    {\textbf{Project Name} $|$ \emph{Go, PostgreSQL, Docker, Kubernetes}}{Jan 2023}
+    \resumeItemListStart
+      \resumeItem{Built a distributed task scheduler processing 100K jobs/day with sub-second latency}
+      \resumeItem{Deployed on GKE with auto-scaling; maintained 99.9\% uptime over 6 months}
+    \resumeItemListEnd
+
+  %% JOBCRAFT: project 2
+  \resumeProjectHeading
+    {\textbf{Another Project} $|$ \emph{Python, FastAPI, React, Redis}}{Aug 2022}
+    \resumeItemListStart
+      \resumeItem{Open-sourced a developer tool with 400+ GitHub stars and 50+ contributors}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+%-----------SKILLS-----------
+\section{Technical Skills}
+\begin{itemize}[leftmargin=0.15in,label={}]
+  \small{\item{
+    %% JOBCRAFT: technical skills by category
+    \textbf{Languages}{: Python, Go, TypeScript, Java, C++, SQL} \\
+    \textbf{Frameworks}{: FastAPI, React, Node.js, Spring Boot, gRPC} \\
+    \textbf{Tools}{: Git, Docker, Kubernetes, Terraform, AWS, GCP, PostgreSQL, Redis}
+  }}
+\end{itemize}
+
+\end{document}

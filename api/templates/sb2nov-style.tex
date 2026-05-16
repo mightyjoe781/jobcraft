@@ -1,0 +1,88 @@
+%% JOBCRAFT template: sb2nov-style
+%% Category: engineering
+%% ATS-friendly: yes
+%% Inspired by: sb2nov's compact clean resume format, popular for new grads
+%% Sections: Education, Experience, Extracurriculars / Projects, Skills
+
+\documentclass[letterpaper, 10.5pt]{article}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage[top=0.5in, bottom=0.5in, left=0.6in, right=0.6in]{geometry}
+\pagestyle{empty}
+\raggedbottom
+\raggedright
+
+\newcommand{\rsection}[1]{
+  \vspace{4pt}
+  \noindent\textbf{\large #1}
+  \vspace{1pt}
+  \hrule
+  \vspace{4pt}
+}
+
+\newcommand{\rentry}[4]{
+  \noindent\textbf{#1} \hfill #2 \\
+  \textit{#3} \hfill \textit{#4} \\
+}
+
+\begin{document}
+
+%% JOBCRAFT: name and contact
+\begin{center}
+  {\Large \textbf{Your Name}} \\
+  \vspace{2pt}
+  %% JOBCRAFT: contact line
+  \href{mailto:you@email.com}{you@email.com} \textbullet\
+  (555) 000-0000 \textbullet\
+  \href{https://linkedin.com/in/you}{linkedin.com/in/you} \textbullet\
+  \href{https://github.com/you}{github.com/you}
+\end{center}
+
+\rsection{Education}
+%% JOBCRAFT: degree
+\rentry{University Name}{Expected May 2025}{Bachelor of Science in Computer Science}{GPA: 3.85/4.0}
+Relevant Courses: Data Structures, Algorithms, Operating Systems, Machine Learning, Databases
+
+\rsection{Experience}
+%% JOBCRAFT: internship / role 1
+\rentry{Software Engineer Intern}{May 2024 -- Aug 2024}{Company Name}{City, State (or Remote)}
+\begin{itemize}[leftmargin=2em, noitemsep, topsep=1pt, parsep=0pt]
+  \item Built a data ingestion pipeline in Python processing \textbf{2TB/day} with 99.9\% reliability
+  \item Reduced query latency by 45\% by adding composite indexes and query plan analysis
+  \item Delivered feature end-to-end (design, code, tests, docs) in a 6-week sprint
+\end{itemize}
+
+\vspace{3pt}
+%% JOBCRAFT: internship / role 2
+\rentry{Teaching Assistant — Data Structures}{Aug 2023 -- May 2024}{University Name}{City, State}
+\begin{itemize}[leftmargin=2em, noitemsep, topsep=1pt, parsep=0pt]
+  \item Held office hours for 120+ students; received 4.9/5.0 average student rating
+  \item Created 3 new programming assignments used by subsequent semesters
+\end{itemize}
+
+\rsection{Projects}
+%% JOBCRAFT: project 1
+\noindent\textbf{Project Name} \textit{| Python, FastAPI, React, PostgreSQL} \hfill \href{https://github.com/you/project}{\textit{github.com/you/project}} \\
+\begin{itemize}[leftmargin=2em, noitemsep, topsep=1pt, parsep=0pt]
+  \item Full-stack web app with 500+ monthly active users; deployed on AWS with 99.9\% uptime
+  \item Implemented JWT auth, rate limiting, and background task queue using Celery + Redis
+\end{itemize}
+
+\vspace{3pt}
+%% JOBCRAFT: project 2
+\noindent\textbf{Another Project} \textit{| Go, gRPC, Docker} \hfill \href{https://github.com/you/project2}{\textit{github.com/you/project2}} \\
+\begin{itemize}[leftmargin=2em, noitemsep, topsep=1pt, parsep=0pt]
+  \item Microservice framework that reduced boilerplate by 70\%; adopted by 3 team projects
+\end{itemize}
+
+\rsection{Skills}
+%% JOBCRAFT: technical skills
+\begin{itemize}[leftmargin=0pt, label={}, noitemsep, topsep=0pt]
+  \item \textbf{Languages:} Python, Go, TypeScript, Java, C++, SQL, Bash
+  \item \textbf{Frameworks:} FastAPI, React, Node.js, Spring Boot, GraphQL
+  \item \textbf{Tools:} Git, Docker, Kubernetes, AWS, PostgreSQL, Redis, Linux, Vim
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,93 @@
+%% JOBCRAFT template: harshibar-style
+%% Category: engineering
+%% ATS-friendly: yes
+%% Inspired by: Harshibar's clean single-column resume format, popular for tech roles
+%% Sections: Education, Experience, Projects, Skills
+
+\documentclass[10pt, letterpaper]{article}
+\usepackage[top=0.5in, bottom=0.5in, left=0.5in, right=0.5in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\pagestyle{empty}
+
+\titleformat{\section}
+  {\normalfont\large\bfseries}
+  {}{0em}{}
+  [\vspace{-8pt}\rule{\textwidth}{0.4pt}\vspace{-2pt}]
+\titlespacing{\section}{0pt}{8pt}{4pt}
+
+\setlength{\parindent}{0pt}
+
+\newcommand{\resumeEntry}[4]{%
+  \textbf{#1} \hfill #2 \\
+  \textit{#3} \hfill \textit{#4}
+}
+
+\begin{document}
+
+%% JOBCRAFT: header
+\begin{center}
+  {\LARGE \textbf{Your Name}}
+
+  \vspace{3pt}
+  %% JOBCRAFT: contact info on one line
+  \href{mailto:you@email.com}{you@email.com}
+  \ $\cdot$\ +1 (555) 000-0000
+  \ $\cdot$\ \href{https://linkedin.com/in/yourprofile}{linkedin.com/in/yourprofile}
+  \ $\cdot$\ \href{https://github.com/yourhandle}{github.com/yourhandle}
+\end{center}
+
+\section{Education}
+
+%% JOBCRAFT: university and degree
+\resumeEntry{University Name}{City, State}{Bachelor of Science in Computer Science}{Aug 2019 -- May 2023}
+
+\vspace{2pt}
+GPA: 3.9/4.0 \quad Relevant Coursework: Distributed Systems, Operating Systems, Machine Learning
+
+\section{Experience}
+
+%% JOBCRAFT: most recent role
+\resumeEntry{Software Engineer}{Jan 2024 -- Present}{Company Name}{City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt, parsep=0pt]
+  %% JOBCRAFT: bullet points — start with strong action verb, quantify impact
+  \item Built REST APIs serving 5M+ daily requests in Go; improved p99 latency by 35\% through query optimization
+  \item Reduced CI/CD pipeline runtime from 45 to 12 minutes by containerizing build steps in GitHub Actions
+  \item Led migration of 3 legacy services to Kubernetes, achieving 99.95\% uptime over 8 months
+\end{itemize}
+
+\vspace{4pt}
+%% JOBCRAFT: previous role
+\resumeEntry{Software Engineering Intern}{May 2022 -- Aug 2022}{Previous Company}{City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt, parsep=0pt]
+  \item Designed and shipped a real-time notification service (WebSockets + Redis); adopted by 200K users in week 1
+  \item Wrote integration tests bringing code coverage from 55\% to 92\% across 4 critical microservices
+\end{itemize}
+
+\section{Projects}
+
+%% JOBCRAFT: project 1 — link to repo or demo
+\textbf{Project Name} $|$ \textit{Go, PostgreSQL, Docker, GKE} \hfill \href{https://github.com/you/project}{github.com/you/project}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt, parsep=0pt]
+  \item Distributed task scheduler processing 100K jobs/day; horizontally scales to 10× load with zero downtime
+  \item Open-sourced; 500+ GitHub stars, used in production by 5+ companies
+\end{itemize}
+
+\vspace{4pt}
+%% JOBCRAFT: project 2
+\textbf{Another Project} $|$ \textit{Python, FastAPI, React, PostgreSQL} \hfill \href{https://github.com/you/project2}{github.com/you/project2}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt, parsep=0pt]
+  \item Developer productivity tool with 60+ open-source contributors and 300+ weekly active users
+\end{itemize}
+
+\section{Skills}
+
+%% JOBCRAFT: technical skills — keep ATS-friendly (no graphics)
+\textbf{Languages:} Python, Go, TypeScript, Java, SQL, Bash \\
+\textbf{Frameworks \& Libraries:} FastAPI, React, Node.js, gRPC, Kafka \\
+\textbf{Tools \& Platforms:} Git, Docker, Kubernetes, Terraform, AWS, GCP, PostgreSQL, Redis, Datadog
+
+\end{document}

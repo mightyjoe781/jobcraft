@@ -1,0 +1,98 @@
+%% JOBCRAFT template: awesome-cv-style
+%% Category: general
+%% ATS-friendly: yes
+%% Inspired by: Awesome CV — header-heavy, clean section formatting
+%% Sections: Summary, Experience, Education, Skills, Projects
+
+\documentclass[11pt, a4paper]{article}
+\usepackage[top=0.7in, bottom=0.7in, left=0.75in, right=0.75in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\definecolor{accent}{HTML}{0E76A8}
+
+\titleformat{\section}
+  {\color{accent}\normalfont\large\bfseries\uppercase}
+  {}{0em}{}
+  [\color{accent}\vspace{-6pt}\rule{\textwidth}{1pt}\vspace{-2pt}]
+\titlespacing{\section}{0pt}{10pt}{5pt}
+
+\begin{document}
+
+%% JOBCRAFT: header — name, title, contact
+\begin{center}
+  {\Huge \textbf{Your Name}}
+
+  \vspace{4pt}
+  %% JOBCRAFT: job title / role you're targeting
+  {\large \color{accent} Software Engineer}
+
+  \vspace{5pt}
+  \small
+  \href{mailto:you@email.com}{you@email.com}
+  \quad|\quad +1 (555) 000-0000
+  \quad|\quad City, State
+  \quad|\quad \href{https://linkedin.com/in/you}{LinkedIn}
+  \quad|\quad \href{https://github.com/you}{GitHub}
+  \quad|\quad \href{https://yoursite.com}{yoursite.com}
+\end{center}
+
+\section{Summary}
+%% JOBCRAFT: 2-3 sentence professional summary tailored to role
+Software engineer with 3+ years building high-throughput distributed systems at scale.
+Strong background in Go and Python; passionate about developer tooling and platform reliability.
+Seeking a senior IC role where I can own infrastructure and mentor a growing team.
+
+\section{Experience}
+
+\textbf{Software Engineer} \hfill \textit{Jan 2024 -- Present} \\
+\textit{\color{accent} Company Name} \hfill {\small City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  %% JOBCRAFT: bullet points — strong verb, specific metric, business context
+  \item Architected and delivered a distributed job scheduler processing \textbf{5M+ tasks/day}, reducing SLA breaches by 80\%
+  \item Cut infrastructure costs by \$120K/year by rightsizing Kubernetes pods and adopting spot instances
+  \item Established engineering standards (code review, on-call runbooks) adopted across 4 teams
+\end{itemize}
+
+\vspace{5pt}
+\textbf{Software Engineering Intern} \hfill \textit{May 2022 -- Aug 2022} \\
+\textit{\color{accent} Previous Company} \hfill {\small City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=3pt]
+  \item Built real-time notification pipeline serving 200K users; launched with zero P0 incidents
+  \item Increased test coverage from 55\% to 92\%, eliminating a class of production regressions
+\end{itemize}
+
+\section{Education}
+
+\textbf{B.S. Computer Science} \hfill \textit{May 2023} \\
+\textit{\color{accent} University Name} \hfill {\small City, State} \\
+GPA: 3.9/4.0 \quad Dean's List (all semesters)
+
+\section{Projects}
+
+\textbf{Project Name} \textit{(Go, PostgreSQL, Kubernetes)} \hfill \href{https://github.com/you/project}{\small github.com/you/project}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Open-source task scheduler with \textbf{500+ GitHub stars}; horizontally scales to 10× without config changes
+\end{itemize}
+
+\vspace{3pt}
+\textbf{Another Project} \textit{(Python, FastAPI, React)}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Developer tool adopted by \textbf{300+ weekly users} and 60+ open-source contributors
+\end{itemize}
+
+\section{Skills}
+
+\begin{tabular}{@{}ll}
+\textbf{Languages} & Python, Go, TypeScript, Java, SQL \\
+\textbf{Frameworks} & FastAPI, React, gRPC, Kafka, Celery \\
+\textbf{Cloud \& Infra} & AWS, GCP, Docker, Kubernetes, Terraform, Helm \\
+\textbf{Databases} & PostgreSQL, Redis, MongoDB, Elasticsearch \\
+\end{tabular}
+
+\end{document}

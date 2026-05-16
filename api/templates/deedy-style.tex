@@ -1,0 +1,152 @@
+%% JOBCRAFT template: deedy-style
+%% Category: engineering
+%% ATS-friendly: no (two-column may confuse some parsers)
+%% Inspired by: Deedy Das's two-column CS resume format
+%% Sections: Left — Education, Skills, Links | Right — Experience, Projects
+
+\documentclass[a4paper]{article}
+\usepackage[margin=0pt]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\definecolor{primary}{HTML}{2b2b2b}
+\definecolor{headingbg}{HTML}{333333}
+\definecolor{accent}{HTML}{4A90D9}
+
+\begin{document}
+\noindent
+%% Left column (35%)
+\begin{minipage}[t]{0.34\textwidth}
+\raggedright
+\vspace{14pt}
+\hspace{8pt}
+%% JOBCRAFT: full name
+{\Large \textbf{\color{primary} Your Name}}
+
+\vspace{6pt}
+\hspace{8pt}
+%% JOBCRAFT: email, phone, location
+{\small \color{gray}
+\hspace{8pt}your@email.com \\
+\hspace{8pt}+1 (555) 000-0000 \\
+\hspace{8pt}City, State \\
+\hspace{8pt}\href{https://github.com/you}{github.com/you} \\
+\hspace{8pt}\href{https://linkedin.com/in/you}{linkedin.com/in/you}
+}
+
+\vspace{16pt}
+\noindent\hspace{8pt}{\footnotesize \color{headingbg}\rule{0.85\textwidth}{0.4pt}}
+
+\vspace{6pt}
+\hspace{8pt}{\small \textbf{EDUCATION}}
+
+\vspace{4pt}
+\hspace{8pt}
+%% JOBCRAFT: degrees
+{\small
+\textbf{B.S. Computer Science} \\
+\hspace{8pt}University Name \\
+\hspace{8pt}{\color{gray}\textit{May 2023, GPA 3.9}}
+}
+
+\vspace{14pt}
+\noindent\hspace{8pt}{\footnotesize \color{headingbg}\rule{0.85\textwidth}{0.4pt}}
+
+\vspace{6pt}
+\hspace{8pt}{\small \textbf{SKILLS}}
+
+\vspace{4pt}
+\hspace{8pt}
+%% JOBCRAFT: skills by category
+{\footnotesize
+\textbf{Languages} \\
+\hspace{4pt}Python, Go, TypeScript \\[3pt]
+\textbf{Frameworks} \\
+\hspace{4pt}FastAPI, React, gRPC \\[3pt]
+\textbf{Infrastructure} \\
+\hspace{4pt}AWS, Docker, Kubernetes \\[3pt]
+\textbf{Databases} \\
+\hspace{4pt}PostgreSQL, Redis, MongoDB
+}
+
+\vspace{14pt}
+\noindent\hspace{8pt}{\footnotesize \color{headingbg}\rule{0.85\textwidth}{0.4pt}}
+
+\vspace{6pt}
+\hspace{8pt}{\small \textbf{COURSEWORK}}
+
+\vspace{4pt}
+\hspace{8pt}
+%% JOBCRAFT: relevant coursework
+{\footnotesize
+Distributed Systems \\
+Operating Systems \\
+Machine Learning \\
+Algorithms \& Data Structures
+}
+
+\end{minipage}%
+%% Right column (65%)
+\begin{minipage}[t]{0.65\textwidth}
+\vspace{12pt}
+\raggedright
+
+{\small \textbf{EXPERIENCE}}
+\noindent\rule{0.95\textwidth}{0.3pt}
+
+\vspace{4pt}
+%% JOBCRAFT: most recent experience
+\textbf{Software Engineer} \hfill {\footnotesize \color{gray} Jan 2024 -- Present} \\
+{\small \color{gray} Company Name, City, State}
+\begin{itemize}[leftmargin=1.2em, noitemsep, topsep=2pt]
+  \item {\footnotesize Built APIs handling 5M+ daily requests; reduced p99 latency by 35\%}
+  \item {\footnotesize Migrated CI/CD to GitHub Actions, cutting deploy time from 45min to 12min}
+  \item {\footnotesize Mentored 2 junior engineers; introduced code review standards across team}
+\end{itemize}
+
+\vspace{6pt}
+%% JOBCRAFT: previous experience
+\textbf{Software Engineering Intern} \hfill {\footnotesize \color{gray} May -- Aug 2022} \\
+{\small \color{gray} Previous Company, City, State}
+\begin{itemize}[leftmargin=1.2em, noitemsep, topsep=2pt]
+  \item {\footnotesize Developed a real-time notification service using WebSockets and Redis}
+  \item {\footnotesize Achieved 90\% test coverage across 3 microservices}
+\end{itemize}
+
+\vspace{10pt}
+{\small \textbf{PROJECTS}}
+\noindent\rule{0.95\textwidth}{0.3pt}
+
+\vspace{4pt}
+%% JOBCRAFT: project 1
+\textbf{Project Name} {\footnotesize $|$ Go, PostgreSQL, Kubernetes} \hfill {\footnotesize \color{gray} github.com/you/project} \\
+\begin{itemize}[leftmargin=1.2em, noitemsep, topsep=2pt]
+  \item {\footnotesize Distributed task scheduler processing 100K jobs/day with 99.9\% uptime}
+  \item {\footnotesize Open-sourced; 400+ GitHub stars, adopted by 3 companies}
+\end{itemize}
+
+\vspace{6pt}
+%% JOBCRAFT: project 2
+\textbf{Another Project} {\footnotesize $|$ Python, FastAPI, React} \hfill {\footnotesize \color{gray} github.com/you/project2} \\
+\begin{itemize}[leftmargin=1.2em, noitemsep, topsep=2pt]
+  \item {\footnotesize Developer tool with 50+ contributors and 200+ weekly active users}
+\end{itemize}
+
+\vspace{10pt}
+{\small \textbf{HONORS \& AWARDS}}
+\noindent\rule{0.95\textwidth}{0.3pt}
+
+\vspace{4pt}
+%% JOBCRAFT: awards and honors
+{\footnotesize
+\textbf{Dean's List} \hfill 2020 -- 2023 \\
+\textbf{Hackathon Winner} — HackMIT \hfill 2022 \\
+\textbf{Merit Scholarship} — \$10,000/year \hfill 2019 -- 2023
+}
+
+\end{minipage}
+\end{document}
