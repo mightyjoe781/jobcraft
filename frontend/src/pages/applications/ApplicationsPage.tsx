@@ -152,11 +152,26 @@ function VariantRow({
 }) {
   const [score, setScore] = useState<AtsScore | null>(null);
   const [scoring, setScoring] = useState(false);
+  const [loadingStored, setLoadingStored] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isActive = app.variant_id === v.id;
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+
+  // When user expands, try to load the stored score from DB first
+  async function handleToggleDetails() {
+    if (showDetails) { setShowDetails(false); return; }
+    setShowDetails(true);
+    if (score) return; // already loaded in this session
+    setLoadingStored(true);
+    try {
+      const stored = await atsApi.getVariantStoredScore(v.id);
+      if (stored) setScore(stored);
+    } finally {
+      setLoadingStored(false);
+    }
+  }
 
   async function handleScore() {
     setScoring(true);
@@ -210,7 +225,7 @@ function VariantRow({
         {/* ATS score + view/score button */}
         <div className="flex items-center gap-2 shrink-0">
           {storedScore !== null ? (
-            <button onClick={() => setShowDetails((x) => !x)}
+            <button onClick={() => void handleToggleDetails()}
               className={`text-sm font-bold ${scoreColor} hover:opacity-80 transition-opacity`}
               title="Click to view ATS breakdown">
               {storedScore}
@@ -240,13 +255,28 @@ function VariantRow({
       {/* ATS details panel (shown = score exists or score clicked) */}
       {showDetails && (
         <div className="px-4 pb-4">
-          {score ? <AtsDetailsPanel score={score} /> : storedScore !== null ? (
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 text-center">
-              <p className="text-gray-500 text-xs">Re-score to see full breakdown</p>
-              <button onClick={() => void handleScore()} disabled={scoring}
-                className="text-indigo-600 text-xs hover:underline mt-1">{scoring ? "Scoring…" : "Score now"}</button>
+          {loadingStored ? (
+            <div className="flex items-center gap-2 text-gray-400 text-xs p-3">
+              <span className="w-3 h-3 border border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              Loading stored results…
             </div>
-          ) : null}
+          ) : score ? (
+            <div>
+              <AtsDetailsPanel score={score} />
+              <button onClick={() => void handleScore()} disabled={scoring}
+                className="text-xs text-gray-400 hover:text-indigo-600 mt-2 transition-colors">
+                {scoring ? "Re-scoring…" : "↻ Re-score"}
+              </button>
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 text-center">
+              <p className="text-gray-500 text-sm mb-2">No ATS score yet</p>
+              <button onClick={() => void handleScore()} disabled={scoring}
+                className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50">
+                {scoring ? "Scoring…" : "Score this variant"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@ import asyncio
 import re
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -188,15 +188,20 @@ async def score_upload(
 
 @router.get("/scores", response_model=list[AtsScoreOut])
 async def list_scores(
+    resume_variant_id: uuid.UUID | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
+    q = (
         select(AtsScore)
-        .where(AtsScore.user_id == current_user.id)
+        .where(AtsScore.user_id == current_user.id, AtsScore.status == "complete")
         .order_by(AtsScore.created_at.desc())
-        .limit(50)
     )
+    if resume_variant_id:
+        q = q.where(AtsScore.resume_variant_id == resume_variant_id).limit(1)
+    else:
+        q = q.limit(50)
+    result = await db.execute(q)
     return [_build_out(r) for r in result.scalars().all()]
 
 

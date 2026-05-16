@@ -47,3 +47,9 @@ export const submitVariantScore = (resume_variant_id: string, jd_text?: string) 
 
 export const getScore = (id: string) => apiFetch<AtsScore>(`/ats/scores/${id}`);
 export const listScores = () => apiFetch<AtsScore[]>("/ats/scores");
+
+/** Fetch the latest stored complete ATS score for a specific variant (null if none). */
+export const getVariantStoredScore = async (variantId: string): Promise<AtsScore | null> => {
+  const results = await apiFetch<AtsScore[]>(`/ats/scores?resume_variant_id=${variantId}`);
+  return results.length > 0 ? results[0] : null;
+};
