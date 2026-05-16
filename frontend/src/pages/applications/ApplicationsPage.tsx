@@ -698,8 +698,14 @@ function DetailsTab({
       </div>
 
       <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
-        <button onClick={() => { if (confirm("Remove this job from tracking?")) void onDelete(app.id); }}
-          className="text-xs text-gray-400 hover:text-red-500 transition-colors">
+        <button
+          onClick={() => {
+            if (confirm(`Remove "${app.company} — ${app.role_title}" from tracking?\n\nThis will also delete all tailored variants for this job. This cannot be undone.`)) {
+              void onDelete(app.id);
+            }
+          }}
+          className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+        >
           Remove from tracking
         </button>
         <p className="text-xs text-gray-300">Fields auto-save on blur</p>

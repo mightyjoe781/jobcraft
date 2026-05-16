@@ -191,9 +191,14 @@ async def update_application(
 @router.delete("/{app_id}", status_code=204)
 async def delete_application(
     app_id: uuid.UUID,
+    delete_variants: bool = True,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    from sqlalchemy import delete as sa_delete
+    from app.models.resume import ResumeVariant
+    from app.models.ats import AtsScore
+
     result = await db.execute(
         select(Application).where(
             Application.id == app_id, Application.user_id == current_user.id
@@ -202,5 +207,29 @@ async def delete_application(
     app = result.scalar_one_or_none()
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
+
+    job_id = app.job_id
+
+    if delete_variants:
+        # Delete ATS scores for this job's variants first (FK)
+        variants_result = await db.execute(
+            select(ResumeVariant.id).where(
+                ResumeVariant.job_id == job_id,
+                ResumeVariant.user_id == current_user.id,
+            )
+        )
+        variant_ids = [r for r, in variants_result.all()]
+        if variant_ids:
+            await db.execute(
+                sa_delete(AtsScore).where(AtsScore.resume_variant_id.in_(variant_ids))
+            )
+        # Delete variants
+        await db.execute(
+            sa_delete(ResumeVariant).where(
+                ResumeVariant.job_id == job_id,
+                ResumeVariant.user_id == current_user.id,
+            )
+        )
+
     await db.delete(app)
     await db.commit()
