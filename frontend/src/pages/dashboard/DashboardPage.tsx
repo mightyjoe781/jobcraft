@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listApplications } from "../../api/applications";
 import type { Application, AppStatus } from "../../api/applications";
+import { getDashboardStats } from "../../api/dashboard";
+import type { DashboardStats } from "../../api/dashboard";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -28,6 +30,18 @@ const PIPELINE_COLUMNS: { status: AppStatus; label: string }[] = [
 const ACTIVE_STATUSES: AppStatus[] = ["saved", "tailoring", "applied", "oa_screen", "interview"];
 
 // ── sub-components ────────────────────────────────────────────────────────────
+
+function StatCard({ label, value, sub, valueColor = "text-white" }: {
+  label: string; value: string | number; sub?: string; valueColor?: string;
+}) {
+  return (
+    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+      <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">{label}</p>
+      <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
+      {sub && <p className="text-gray-500 text-xs mt-1">{sub}</p>}
+    </div>
+  );
+}
 
 function JobCard({ app }: { app: Application }) {
   return (
@@ -140,10 +154,11 @@ export default function DashboardPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [showClosed, setShowClosed] = useState(false);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
-    listApplications()
-      .then(setApplications)
+    Promise.all([listApplications(), getDashboardStats()])
+      .then(([apps, s]) => { setApplications(apps); setStats(s); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -289,6 +304,58 @@ export default function DashboardPage() {
           Show rejected / withdrawn
         </label>
       </div>
+
+      {/* ── Stats section ── */}
+      {stats && (
+        <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label="Tailored Variants"
+            value={stats.total_variants}
+            sub="total resume variants created"
+          />
+          <StatCard
+            label="Avg ATS Score"
+            value={stats.avg_ats_score ?? "—"}
+            sub={`across ${stats.total_scores} scored resume${stats.total_scores !== 1 ? "s" : ""}`}
+            valueColor={
+              stats.avg_ats_score === null ? "text-gray-500" :
+              stats.avg_ats_score >= 70 ? "text-green-400" :
+              stats.avg_ats_score >= 50 ? "text-yellow-400" : "text-red-400"
+            }
+          />
+          <StatCard
+            label="Skill Gaps"
+            value={stats.skill_gap_summary.total}
+            sub={`${stats.skill_gap_summary.acquired} acquired · ${stats.skill_gap_summary.learning} learning`}
+            valueColor="text-blue-400"
+          />
+          <StatCard
+            label="AI Cost (this month)"
+            value={`$${stats.ai_usage.estimated_cost_usd}`}
+            sub={`${stats.ai_usage.tailor_runs_this_month} tailor run${stats.ai_usage.tailor_runs_this_month !== 1 ? "s" : ""}`}
+          />
+        </div>
+      )}
+
+      {/* ── Recent activity ── */}
+      {stats && stats.recent_activity.length > 0 && (
+        <div className="mt-6 bg-gray-900 rounded-xl border border-gray-800 p-5">
+          <p className="text-gray-400 text-xs uppercase tracking-wide mb-4">Recent Activity</p>
+          <div className="space-y-2.5">
+            {stats.recent_activity.map((item, i) => (
+              <div key={i} className="flex items-start gap-3 text-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-1.5" />
+                <div className="flex-1">
+                  <span className="text-white capitalize">{item.action.replace(/_/g, " ")}</span>
+                  <span className="text-gray-600 ml-2 text-xs">
+                    {new Date(item.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

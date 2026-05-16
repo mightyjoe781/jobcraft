@@ -67,7 +67,7 @@ class ResumeVariant(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    base_resume_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("base_resumes.id"), nullable=False)
+    base_resume_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("base_resumes.id", ondelete="SET NULL"), nullable=True)
     job_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("jobs.id"), nullable=True)
     modified_tex_path: Mapped[str] = mapped_column(String, nullable=False)
     pdf_path: Mapped[str | None] = mapped_column(String, nullable=True)

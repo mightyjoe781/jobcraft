@@ -24,11 +24,21 @@ export default function MyResumes() {
   }, []);
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this base resume? All snapshots will be removed. Variants are kept.")) return;
+    const resume = resumes.find((r) => r.id === id);
+    const variantWarn = (resume?.variant_count ?? 0) > 0
+      ? ` Tailored variants linked to it will be kept but unlinked.`
+      : "";
+    if (!confirm(`Delete this base resume?${variantWarn} Snapshots will be removed. This cannot be undone.`)) return;
     setDeleting(id);
-    await resumeApi.deleteBaseResume(id);
-    setResumes((prev) => prev.filter((r) => r.id !== id));
-    setDeleting(null);
+    try {
+      await resumeApi.deleteBaseResume(id);
+      setResumes((prev) => prev.filter((r) => r.id !== id));
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      alert(`Failed to delete: ${e.message ?? "unknown error"}`);
+    } finally {
+      setDeleting(null);
+    }
   }
 
   return (
