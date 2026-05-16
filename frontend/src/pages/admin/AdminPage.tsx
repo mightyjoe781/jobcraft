@@ -277,10 +277,9 @@ function UsersTab() {
           <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
             <tr>
               <th className="px-4 py-3 text-left">User</th>
-              <th className="px-4 py-3 text-left">Joined</th>
-
-              <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3 text-left w-28">Joined</th>
+              <th className="px-4 py-3 text-left w-24">Status</th>
+              <th className="px-4 py-3 text-right w-32">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
