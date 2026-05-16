@@ -17,8 +17,9 @@ class Settings(BaseSettings):
     # Registration gate
     registration_token: str = ""
 
-    # Admin — email of the designated admin user (regular account + elevated API access)
+    # Admin — email and password for the auto-bootstrapped admin account
     admin_email: str = ""
+    admin_password: str = ""
 
     # CORS — comma-separated list of allowed origins
     # Default: localhost only. Set to production domain at deploy time.

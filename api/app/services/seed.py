@@ -129,3 +129,29 @@ async def seed_templates(db: AsyncSession) -> None:
         db.add(ResumeTemplate(slug=slug, tex_source_path=path, **meta))
 
     await db.commit()
+
+
+async def seed_admin(db: AsyncSession) -> None:
+    """Bootstrap the admin account from ADMIN_EMAIL + ADMIN_PASSWORD in config.
+    Creates the account if it doesn't exist; updates the password if it does."""
+    from app.config import settings
+    from app.models.user import User
+    from app.services.auth import hash_password
+
+    if not settings.admin_email or not settings.admin_password:
+        return  # nothing configured — skip silently
+
+    result = await db.execute(select(User).where(User.email == settings.admin_email))
+    user = result.scalar_one_or_none()
+    new_hash = hash_password(settings.admin_password)
+
+    if user:
+        user.password_hash = new_hash  # keep password in sync with .env
+    else:
+        db.add(User(
+            email=settings.admin_email,
+            password_hash=new_hash,
+            display_name="Admin",
+        ))
+
+    await db.commit()

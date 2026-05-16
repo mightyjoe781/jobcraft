@@ -17,7 +17,7 @@ from app.routers import dashboard as dashboard_router
 from app.routers import cover_letters as cover_letters_router
 from app.routers import applications as applications_router
 from app.routers import admin as admin_router
-from app.services.seed import seed_templates
+from app.services.seed import seed_admin, seed_templates
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(_: FastAPI):
     async with AsyncSessionLocal() as db:
         await seed_templates(db)
+        await seed_admin(db)
     yield
 
 
