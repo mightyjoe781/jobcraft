@@ -140,7 +140,7 @@ function AtsDetailsPanel({ score }: { score: AtsScore }) {
 }
 
 function VariantRow({
-  v, app, onAppUpdate, onDelete, onFork, onPreview,
+  v, app, onAppUpdate, onDelete, onFork, onPreview, onScored,
 }: {
   v: Variant;
   app: Application;
@@ -148,6 +148,7 @@ function VariantRow({
   onDelete: (id: string) => void;
   onFork: (v: Variant) => void;
   onPreview: (id: string) => void;
+  onScored: (variantId: string, score: number) => void;
 }) {
   const [score, setScore] = useState<AtsScore | null>(null);
   const [scoring, setScoring] = useState(false);
@@ -167,9 +168,17 @@ function VariantRow({
         setScore(pending);
         pollRef.current = setInterval(async () => {
           const s = await atsApi.getScore(result.score_id);
-          if (s.status !== "pending") { setScore(s); if (pollRef.current) clearInterval(pollRef.current); }
+          if (s.status !== "pending") {
+            setScore(s);
+            if (s.overall_score !== null) onScored(v.id, s.overall_score);
+            if (pollRef.current) clearInterval(pollRef.current);
+          }
         }, 2000);
-      } else { setScore(result as AtsScore); }
+      } else {
+        const s = result as AtsScore;
+        setScore(s);
+        if (s.overall_score !== null) onScored(v.id, s.overall_score);
+      }
     } finally { setScoring(false); }
   }
 
@@ -302,7 +311,8 @@ function VariantsTab({
         <div className="space-y-2">
           {variants.map((v) => (
             <VariantRow key={v.id} v={v} app={app} onAppUpdate={onAppUpdate}
-              onDelete={handleDelete} onFork={handleFork} onPreview={setPreviewId} />
+              onDelete={handleDelete} onFork={handleFork} onPreview={setPreviewId}
+              onScored={(id, score) => setVariants((prev) => prev.map((x) => x.id === id ? { ...x, ats_score: score } : x))} />
           ))}
         </div>
       )}

@@ -142,6 +142,7 @@ def run_ats_score_task(score_id: str, resume_text: str, jd_text: str):
 
 async def _async_ats(score_id: uuid.UUID, resume_text: str, jd_text: str):
     from app.models.ats import AtsScore
+    from app.models.resume import ResumeVariant
     from app.services.ats import score_resume
     from sqlalchemy import select
 
@@ -161,6 +162,14 @@ async def _async_ats(score_id: uuid.UUID, resume_text: str, jd_text: str):
                     "missing_keywords": data.get("missing_keywords", []),
                     "suggestions": data.get("suggestions", []),
                 }
+                # Also update the variant's cached ats_score so it shows without re-scoring
+                if score_row.resume_variant_id:
+                    v_result = await db.execute(
+                        select(ResumeVariant).where(ResumeVariant.id == score_row.resume_variant_id)
+                    )
+                    variant = v_result.scalar_one_or_none()
+                    if variant:
+                        variant.ats_score = data["overall_score"]
             except Exception as exc:
                 score_row.status = "failed"
                 score_row.error_message = str(exc)

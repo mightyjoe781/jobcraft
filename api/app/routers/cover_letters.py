@@ -107,8 +107,10 @@ async def create_and_stream(
 
     async def stream():
         import json
+        from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession as _AsyncSession
+        from app.config import settings as _s
+
         full_text = ""
-        # First event: send the cover letter ID so the client can reference it
         yield f"event: id\ndata: {json.dumps({'cover_letter_id': str(cl_id)})}\n\n"
 
         try:
@@ -121,18 +123,28 @@ async def create_and_stream(
                 full_text += chunk
                 yield f"event: chunk\ndata: {json.dumps({'text': chunk})}\n\n"
 
-            # Persist completed body
-            async with db.begin():
-                result = await db.execute(select(CoverLetter).where(CoverLetter.id == cl_id))
-                saved = result.scalar_one_or_none()
-                if saved:
-                    saved.body_text = full_text
+            # Use a fresh engine/session to persist — the request session may
+            # be in an inconsistent state after streaming
+            engine = create_async_engine(_s.database_url, pool_size=1, max_overflow=0)
+            try:
+                async with _AsyncSession(engine) as session:
+                    result = await session.execute(
+                        select(CoverLetter).where(CoverLetter.id == cl_id)
+                    )
+                    saved = result.scalar_one_or_none()
+                    if saved:
+                        saved.body_text = full_text
+                        await session.commit()
+            finally:
+                await engine.dispose()
+
             yield f"event: done\ndata: {json.dumps({'cover_letter_id': str(cl_id)})}\n\n"
 
         except Exception as exc:
             yield f"event: error\ndata: {json.dumps({'message': str(exc)})}\n\n"
 
-    return StreamingResponse(stream(), media_type="text/event-stream")
+    return StreamingResponse(stream(), media_type="text/event-stream",
+                             headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"})
 
 
 @router.patch("/{cl_id}", response_model=CoverLetterOut)

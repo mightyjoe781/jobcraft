@@ -216,24 +216,48 @@ async def tailor_stream(
     current_user: User = Depends(get_current_user_sse),
     db: AsyncSession = Depends(get_db),
 ):
-    """SSE endpoint — subscribe to Redis pub/sub for this variant's progress events."""
+    """SSE endpoint. Handles the race condition where the worker finishes
+    before the client subscribes by checking the DB state first."""
+    import json as _json
+
     result = await db.execute(
         select(ResumeVariant).where(
             ResumeVariant.id == variant_id,
             ResumeVariant.user_id == current_user.id,
         )
     )
-    if not result.scalar_one_or_none():
+    variant = result.scalar_one_or_none()
+    if not variant:
         raise HTTPException(status_code=404, detail="Variant not found")
 
     async def event_stream():
-        timeout = 120  # max seconds to wait for completion
-        elapsed = 0
+        # Re-fetch to get latest state inside the generator
+        from app.database import AsyncSessionLocal
+        from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+        from app.config import settings as _settings
+
+        engine = create_async_engine(_settings.database_url, pool_size=1, max_overflow=0)
+        async with AsyncSession(engine) as session:
+            r = await session.execute(
+                select(ResumeVariant).where(ResumeVariant.id == variant_id)
+            )
+            v = r.scalar_one_or_none()
+
+        await engine.dispose()
+
+        # If already done (worker finished before client subscribed), emit immediately
+        if v and v.pdf_path:
+            yield f"event: progress\ndata: {_json.dumps({'message': 'Resume tailored'})}\n\n"
+            yield f"event: diff_ready\ndata: {_json.dumps({'changes_summary': []})}\n\n"
+            yield f"event: pdf_ready\ndata: {_json.dumps({'pdf_url': f'/api/resumes/variants/{variant_id}/pdf'})}\n\n"
+            return
+
+        # Otherwise subscribe to pub/sub and wait
         async for chunk in subscribe_sse(variant_id):
             yield chunk
-            elapsed += 0
-            if elapsed >= timeout:
-                yield "event: error\ndata: {\"message\": \"Timeout\"}\n\n"
-                break
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+        # Keepalive comment every 15s so nginx/browser don't close the connection
+        # (handled by subscribe_sse breaking on pdf_ready/error)
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream",
+                             headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"})
