@@ -21,7 +21,7 @@ from app.workers.tasks import run_ats_score_task
 
 router = APIRouter(prefix="/api/ats", tags=["ats"])
 
-_SYNC_TIMEOUT = 11
+_SYNC_TIMEOUT = 60  # Claude structured scoring takes 20-35s; give it room
 
 
 def _strip_latex(tex: str) -> str:

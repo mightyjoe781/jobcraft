@@ -56,7 +56,7 @@ services:
 
   worker:
     build: ./api
-    command: celery -A app.workers.celery_app worker --loglevel=info -Q default
+    command: celery -A app.workers.celery_app worker --loglevel=info
     env_file: .env
     environment:
       DATABASE_URL: postgresql+asyncpg://jobcraft:${POSTGRES_PASSWORD}@postgres:5432/jobcraft
