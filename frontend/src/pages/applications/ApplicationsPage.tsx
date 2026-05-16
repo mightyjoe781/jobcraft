@@ -85,47 +85,162 @@ const TABS: { id: TabId; label: string }[] = [
 
 // ── Variants tab ───────────────────────────────────────────────────────────────
 
-function VariantAtsScore({ variantId }: { variantId: string }) {
+const BREAKDOWN_LABELS: Record<string, string> = {
+  keyword_match: "Keywords", semantic_relevance: "Relevance",
+  formatting: "Formatting", action_verbs: "Action Verbs",
+  quantification: "Quantification", seniority_match: "Seniority",
+};
+
+function AtsDetailsPanel({ score }: { score: AtsScore }) {
+  if (score.status === "pending") return (
+    <div className="flex items-center gap-2 text-gray-500 text-xs p-3">
+      <span className="w-3 h-3 border border-accent border-t-transparent rounded-full animate-spin" />
+      Scoring… (~30s)
+    </div>
+  );
+  if (score.status === "failed") return <p className="text-red-500 text-xs p-3">{score.error_message}</p>;
+  const s = score.overall_score ?? 0;
+  const color = s >= 70 ? "text-green-600" : s >= 50 ? "text-yellow-600" : "text-red-600";
+  return (
+    <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 mt-2 space-y-3">
+      <div className="flex items-center gap-3">
+        <span className={`text-2xl font-bold ${color}`}>{s}</span>
+        <span className="text-gray-500 text-xs">
+          {s >= 70 ? "Strong match" : s >= 50 ? "Moderate match" : "Needs improvement"}
+        </span>
+      </div>
+      {score.breakdown && (
+        <div className="space-y-1.5">
+          {Object.entries(score.breakdown).map(([k, v]) => (
+            <div key={k} className="flex items-center gap-2">
+              <span className="text-gray-500 text-xs w-28 shrink-0">{BREAKDOWN_LABELS[k] ?? k}</span>
+              <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                <div className={`h-1.5 rounded-full ${(v as number) >= 70 ? "bg-green-500" : (v as number) >= 50 ? "bg-yellow-500" : "bg-red-500"}`}
+                  style={{ width: `${v}%` }} />
+              </div>
+              <span className="text-xs text-gray-600 w-6 text-right">{v as number}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {score.missing_keywords && score.missing_keywords.length > 0 && (
+        <div>
+          <p className="text-gray-400 text-xs mb-1.5">Missing keywords</p>
+          <div className="flex flex-wrap gap-1">
+            {score.missing_keywords.slice(0, 6).map((k, i) => (
+              <span key={i} className={`text-xs px-1.5 py-0.5 rounded ${k.priority === "high" ? "bg-red-50 text-red-600" : "bg-gray-100 text-gray-500"}`}>
+                {k.term}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VariantRow({
+  v, app, onAppUpdate, onDelete, onFork, onPreview,
+}: {
+  v: Variant;
+  app: Application;
+  onAppUpdate: (a: Application) => void;
+  onDelete: (id: string) => void;
+  onFork: (v: Variant) => void;
+  onPreview: (id: string) => void;
+}) {
   const [score, setScore] = useState<AtsScore | null>(null);
   const [scoring, setScoring] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isActive = app.variant_id === v.id;
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   async function handleScore() {
     setScoring(true);
+    setShowDetails(true);
     try {
-      const result = await atsApi.submitVariantScore(variantId);
+      const result = await atsApi.submitVariantScore(v.id);
       if ("score_id" in result) {
-        setScore({ id: result.score_id, status: "pending", overall_score: null, breakdown: null, missing_keywords: null, suggestions: null, error_message: null, created_at: new Date().toISOString() });
+        const pending: AtsScore = { id: result.score_id, status: "pending", overall_score: null, breakdown: null, missing_keywords: null, suggestions: null, error_message: null, created_at: new Date().toISOString() };
+        setScore(pending);
         pollRef.current = setInterval(async () => {
           const s = await atsApi.getScore(result.score_id);
           if (s.status !== "pending") { setScore(s); if (pollRef.current) clearInterval(pollRef.current); }
         }, 2000);
-      } else {
-        setScore(result as AtsScore);
-      }
+      } else { setScore(result as AtsScore); }
     } finally { setScoring(false); }
   }
 
-  if (!score) {
-    return (
-      <button onClick={() => void handleScore()} disabled={scoring}
-        className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50 transition-colors">
-        {scoring ? "Scoring…" : "Score"}
-      </button>
-    );
+  async function handleSetActive() {
+    const updated = await appApi.updateApplication(app.id, {
+      resume_variant_id: v.id,
+    } as Parameters<typeof appApi.updateApplication>[1]);
+    onAppUpdate(updated);
   }
-  if (score.status === "pending") {
-    return <span className="text-xs text-gray-500 flex items-center gap-1"><span className="w-3 h-3 border border-accent border-t-transparent rounded-full animate-spin" />Scoring…</span>;
-  }
-  if (score.status === "failed") {
-    return <button onClick={() => void handleScore()} className="text-xs text-red-600 hover:underline">Failed — retry</button>;
-  }
-  const s = score.overall_score ?? 0;
-  const color = s >= 70 ? "text-green-600" : s >= 50 ? "text-yellow-600" : "text-red-600";
+
+  const storedScore = v.ats_score;
+  const scoreColor = storedScore !== null
+    ? storedScore >= 70 ? "text-green-600" : storedScore >= 50 ? "text-yellow-600" : "text-red-600"
+    : "text-gray-400";
+
   return (
-    <span className={`text-xs font-semibold ${color}`} title="ATS Score">{s} ATS</span>
+    <div className={`bg-white rounded-xl border shadow-sm ${isActive ? "border-indigo-300" : "border-gray-200"}`}>
+      <div className="flex items-center gap-4 px-4 py-3">
+        {/* Left: active badge + date */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            {isActive && <span className="text-xs bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-medium">Active</span>}
+            <span className="text-gray-500 text-xs">
+              {new Date(v.created_at).toLocaleDateString()} {new Date(v.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </div>
+        </div>
+
+        {/* ATS score + view/score button */}
+        <div className="flex items-center gap-2 shrink-0">
+          {storedScore !== null ? (
+            <button onClick={() => setShowDetails((x) => !x)}
+              className={`text-sm font-bold ${scoreColor} hover:opacity-80 transition-opacity`}
+              title="Click to view ATS breakdown">
+              {storedScore}
+              <span className="text-gray-400 text-xs font-normal ml-1">ATS {showDetails ? "▲" : "▼"}</span>
+            </button>
+          ) : (
+            <button onClick={() => void handleScore()} disabled={scoring}
+              className="text-xs text-indigo-600 hover:underline disabled:opacity-50">
+              {scoring ? "Scoring…" : "Score ATS"}
+            </button>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 shrink-0 text-xs">
+          <button onClick={() => onPreview(v.id)} className="text-indigo-600 hover:underline">Preview</button>
+          <PdfDownloadLink apiPath={resumeApi.variantPdfUrl(v.id)} filename={`${app.company}-${app.role_title}.pdf`}
+            className="text-gray-500 hover:text-gray-900">Download</PdfDownloadLink>
+          {!isActive && (
+            <button onClick={() => void handleSetActive()} className="text-gray-500 hover:text-gray-900">Set active</button>
+          )}
+          <button onClick={() => onFork(v)} className="text-gray-500 hover:text-gray-900">Fork</button>
+          <button onClick={() => onDelete(v.id)} className="text-gray-400 hover:text-red-600">Delete</button>
+        </div>
+      </div>
+
+      {/* ATS details panel (shown = score exists or score clicked) */}
+      {showDetails && (
+        <div className="px-4 pb-4">
+          {score ? <AtsDetailsPanel score={score} /> : storedScore !== null ? (
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 text-center">
+              <p className="text-gray-500 text-xs">Re-score to see full breakdown</p>
+              <button onClick={() => void handleScore()} disabled={scoring}
+                className="text-indigo-600 text-xs hover:underline mt-1">{scoring ? "Scoring…" : "Score now"}</button>
+            </div>
+          ) : null}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -139,7 +254,6 @@ function VariantsTab({
   const [variants, setVariants] = useState<Variant[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -149,13 +263,10 @@ function VariantsTab({
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this variant?")) return;
-    setDeleting(id);
     try {
       await resumeApi.deleteVariant(id);
       setVariants((prev) => prev.filter((v) => v.id !== id));
-    } finally {
-      setDeleting(null);
-    }
+    } catch { alert("Delete failed"); }
   }
 
   async function handleFork(v: Variant) {
@@ -163,39 +274,19 @@ function VariantsTab({
     if (!label) return;
     try {
       const diff = await resumeApi.getVariantDiff(v.id);
-      await resumeApi.createBaseResume({
-        label,
-        source_type: "forked_variant",
-        source_variant_id: v.id,
-        tex_source: diff.modified_tex,
-      });
+      await resumeApi.createBaseResume({ label, source_type: "forked_variant", source_variant_id: v.id, tex_source: diff.modified_tex });
       alert(`Forked as "${label}" — now in My Resumes`);
-    } catch {
-      alert("Fork failed");
-    }
+    } catch { alert("Fork failed"); }
   }
 
-  async function handleSetActive(variantId: string) {
-    const updated = await appApi.updateApplication(app.id, {
-      resume_variant_id: variantId,
-    } as Parameters<typeof appApi.updateApplication>[1]);
-    onAppUpdate(updated);
-  }
-
-  if (loading) {
-    return <div className="p-6 text-gray-400 text-sm">Loading variants…</div>;
-  }
+  if (loading) return <div className="p-6 text-gray-400 text-sm">Loading variants…</div>;
 
   return (
     <div className="p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-gray-500 text-sm">
-          {variants.length} variant{variants.length !== 1 ? "s" : ""} for this job
-        </p>
-        <button
-          onClick={() => navigate(`/apply?job_id=${app.job_id}`)}
-          className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
-        >
+        <p className="text-gray-500 text-sm">{variants.length} variant{variants.length !== 1 ? "s" : ""} for this job</p>
+        <button onClick={() => navigate(`/apply?job_id=${app.job_id}`)}
+          className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors">
           + Tailor new variant
         </button>
       </div>
@@ -203,61 +294,15 @@ function VariantsTab({
       {variants.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
           <p className="text-gray-400 text-sm mb-3">No variants yet</p>
-          <button
-            onClick={() => navigate(`/apply?job_id=${app.job_id}`)}
-            className="text-accent text-sm hover:underline"
-          >
+          <button onClick={() => navigate(`/apply?job_id=${app.job_id}`)} className="text-accent text-sm hover:underline">
             Tailor a resume for this job →
           </button>
         </div>
       ) : (
         <div className="space-y-2">
           {variants.map((v) => (
-            <div
-              key={v.id}
-              className={`flex items-center gap-3 bg-white rounded-xl border px-4 py-3 shadow-sm ${
-                app.variant_id === v.id ? "border-accent/50" : "border-gray-200"
-              }`}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  {app.variant_id === v.id && (
-                    <span className="text-accent text-xs font-medium">Active</span>
-                  )}
-                  <span className="text-gray-500 text-xs">
-                    {new Date(v.created_at).toLocaleDateString()} {new Date(v.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </div>
-                {/* Show stored ATS score or score-on-demand button */}
-                {v.ats_score !== null
-                  ? <AtsScoreBadge score={v.ats_score} />
-                  : <VariantAtsScore variantId={v.id} />
-                }
-              </div>
-              <div className="flex gap-3 shrink-0 text-xs">
-                <button onClick={() => setPreviewId(v.id)} className="text-accent hover:underline">Preview</button>
-                <PdfDownloadLink
-                  apiPath={resumeApi.variantPdfUrl(v.id)}
-                  filename={`${app.company}-${app.role_title}.pdf`}
-                  className="text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  Download
-                </PdfDownloadLink>
-                {app.variant_id !== v.id && (
-                  <button onClick={() => void handleSetActive(v.id)} className="text-gray-500 hover:text-gray-900 transition-colors">
-                    Set active
-                  </button>
-                )}
-                <button onClick={() => void handleFork(v)} className="text-gray-500 hover:text-gray-900 transition-colors">Fork</button>
-                <button
-                  onClick={() => void handleDelete(v.id)}
-                  disabled={deleting === v.id}
-                  className="text-gray-400 hover:text-red-600 transition-colors"
-                >
-                  {deleting === v.id ? "…" : "Delete"}
-                </button>
-              </div>
-            </div>
+            <VariantRow key={v.id} v={v} app={app} onAppUpdate={onAppUpdate}
+              onDelete={handleDelete} onFork={handleFork} onPreview={setPreviewId} />
           ))}
         </div>
       )}
@@ -314,7 +359,14 @@ function CoverLetterTab({ app }: { app: Application }) {
     });
   }, [app.job_id]);
 
+  const [genError, setGenError] = useState<string | null>(null);
+
   async function handleGenerate() {
+    if (!app.jd_text?.trim()) {
+      setGenError("Add a job description in the Details tab first — it's needed to generate a relevant cover letter.");
+      return;
+    }
+    setGenError(null);
     setGenerating(true);
     setActiveText("");
     setActiveLetterId(null);
@@ -327,16 +379,24 @@ function CoverLetterTab({ app }: { app: Application }) {
       })) {
         if (event.type === "id") setActiveLetterId(event.data.cover_letter_id);
         else if (event.type === "chunk") { accumulated += event.data.text ?? ""; setActiveText(accumulated); }
+        else if (event.type === "error") { setGenError(event.data.message ?? "Generation failed"); break; }
         else if (event.type === "done") {
           const fresh = await coverLetterApi.listCoverLetters();
           setLetters(fresh.filter((cl) => cl.job_id === app.job_id));
         }
       }
+    } catch (err: unknown) {
+      setGenError((err as { message?: string }).message ?? "Generation failed");
     } finally { setGenerating(false); }
   }
 
   return (
     <div className="p-5 space-y-4">
+      {genError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+          {genError}
+        </div>
+      )}
       <div className="flex items-center gap-3">
         <select
           value={tone}
@@ -521,105 +581,80 @@ function DetailsTab({
     setFollowUp(app.follow_up_date ?? "");
   }, [app.id]);
 
+  async function saveNotes() {
+    setSavingNotes(true);
+    try {
+      const updated = await appApi.updateApplication(app.id, {
+        notes, referral_contact: referral, follow_up_date: followUp || undefined,
+      });
+      onUpdate(updated);
+    } finally { setSavingNotes(false); }
+  }
+
+  async function saveJd() {
+    setSavingJd(true);
+    try { await updateJob(app.job_id, { jd_text: jdText }); }
+    finally { setSavingJd(false); }
+  }
+
   return (
-    <div className="p-5 space-y-5">
-      {/* Status */}
+    <div className="p-5 space-y-4">
+      {/* Status quick-set */}
       <div>
-        <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">Status</p>
+        <p className="text-gray-400 text-xs mb-2">Status</p>
         <div className="flex flex-wrap gap-1.5">
           {STATUS_ORDER.map((s) => (
-            <button
-              key={s}
-              onClick={async () => { const updated = await appApi.updateApplication(app.id, { status: s }); onUpdate(updated); }}
-              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${app.status === s ? STATUS_COLORS[s] + " ring-1 ring-current" : "bg-gray-100 text-gray-400 hover:text-gray-900"}`}
-            >
+            <button key={s}
+              onClick={async () => { const u = await appApi.updateApplication(app.id, { status: s }); onUpdate(u); }}
+              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${app.status === s ? STATUS_COLORS[s] + " ring-1 ring-current" : "bg-gray-100 text-gray-400 hover:text-gray-900"}`}>
               {STATUS_LABELS[s]}
             </button>
           ))}
         </div>
       </div>
 
-      {/* JD */}
-      <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label className="text-xs text-gray-400 uppercase tracking-wide">Job Description</label>
-          {app.jd_url && <a href={app.jd_url} target="_blank" rel="noreferrer" className="text-xs text-accent hover:underline">View original ↗</a>}
+      {/* Quick fields — auto-save on blur */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Referral contact</label>
+          <input value={referral} onChange={(e) => setReferral(e.target.value)} onBlur={() => void saveNotes()}
+            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            placeholder="Name or email" />
         </div>
-        <textarea
-          value={jdText}
-          onChange={(e) => setJdText(e.target.value)}
-          rows={6}
-          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-accent"
-          placeholder="Paste the job description — used for ATS scoring and skill gap analysis"
-        />
-        <div className="flex justify-end mt-1.5">
-          <button
-            onClick={async () => { setSavingJd(true); try { await updateJob(app.job_id, { jd_text: jdText }); } finally { setSavingJd(false); } }}
-            disabled={savingJd}
-            className="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-900 rounded-lg px-3 py-1.5 transition-colors"
-          >
-            {savingJd ? "Saving…" : "Save JD"}
-          </button>
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Follow-up date</label>
+          <input type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} onBlur={() => void saveNotes()}
+            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
         </div>
       </div>
 
-      {/* Notes + referral + follow-up */}
-      <div className="space-y-3">
-        <div>
-          <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Notes</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent"
-            placeholder="Recruiter name, next steps, interview notes…"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Referral contact</label>
-            <input
-              value={referral}
-              onChange={(e) => setReferral(e.target.value)}
-              className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              placeholder="Name or email"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Follow-up date</label>
-            <input
-              type="date"
-              value={followUp}
-              onChange={(e) => setFollowUp(e.target.value)}
-              className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            />
+      <div>
+        <label className="block text-xs text-gray-400 mb-1">Notes</label>
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => void saveNotes()}
+          rows={3} placeholder="Recruiter name, next steps, interview notes…"
+          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent" />
+        {savingNotes && <p className="text-xs text-gray-400 mt-1">Saving…</p>}
+      </div>
+
+      {/* JD */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs text-gray-400">Job Description</label>
+          <div className="flex items-center gap-2">
+            {app.jd_url && <a href={app.jd_url} target="_blank" rel="noreferrer" className="text-xs text-accent hover:underline">View original ↗</a>}
+            {savingJd && <span className="text-xs text-gray-400">Saving…</span>}
           </div>
         </div>
-        <div className="flex items-center justify-between pt-1">
-          <button
-            onClick={() => { if (confirm("Remove this job from tracking?")) void onDelete(app.id); }}
-            className="text-xs text-gray-400 hover:text-red-600 transition-colors"
-          >
-            Remove from tracking
-          </button>
-          <button
-            onClick={async () => {
-              setSavingNotes(true);
-              try {
-                const updated = await appApi.updateApplication(app.id, {
-                  notes,
-                  referral_contact: referral,
-                  follow_up_date: followUp || undefined,
-                });
-                onUpdate(updated);
-              } finally { setSavingNotes(false); }
-            }}
-            disabled={savingNotes}
-            className="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-900 rounded-lg px-3 py-1.5 transition-colors"
-          >
-            {savingNotes ? "Saving…" : "Save"}
-          </button>
-        </div>
+        <textarea value={jdText} onChange={(e) => setJdText(e.target.value)} onBlur={() => void saveJd()}
+          rows={5} placeholder="Paste the job description — used for ATS scoring and skill gap analysis"
+          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-accent" />
+      </div>
+
+      <div className="pt-1 border-t border-gray-100">
+        <button onClick={() => { if (confirm("Remove this job from tracking?")) void onDelete(app.id); }}
+          className="text-xs text-gray-400 hover:text-red-600 transition-colors">
+          Remove from tracking
+        </button>
       </div>
     </div>
   );
@@ -782,7 +817,7 @@ export default function ApplicationsPage() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* ── Left panel: job list ── */}
-      <div className="w-72 shrink-0 border-r border-gray-200 flex flex-col">
+      <div className="w-80 shrink-0 border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="px-4 pt-3 pb-2 border-b border-gray-200 shrink-0">
           {/* Row 1: title + apply */}
