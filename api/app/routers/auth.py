@@ -1,3 +1,5 @@
+import hmac
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,13 +16,13 @@ from app.schemas.auth import (
     UserOut,
 )
 from app.services.auth import (
+    authenticate_user,
     create_access_token,
     get_user_by_email,
     hash_password,
     revoke_refresh_token,
     rotate_refresh_token,
     store_refresh_token,
-    verify_password,
 )
 from app.dependencies import get_current_user
 
@@ -43,7 +45,8 @@ def auth_config():
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    if settings.registration_token and body.registration_token != settings.registration_token:
+    # S-16: timing-safe comparison prevents oracle attacks
+    if settings.registration_token and not hmac.compare_digest(body.registration_token, settings.registration_token):
         raise HTTPException(status_code=403, detail="Invalid registration token")
 
     existing = await get_user_by_email(db, body.email)
@@ -65,8 +68,9 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
-    user = await get_user_by_email(db, body.email)
-    if not user or not verify_password(body.password, user.password_hash):
+    # S-08: authenticate_user always runs bcrypt — no timing oracle for account existence
+    user = await authenticate_user(db, body.email, body.password)
+    if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     refresh = await store_refresh_token(db, user.id)
@@ -113,5 +117,14 @@ async def delete_me(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # S-22: audit log before deletion
+    from app.models.activity import ActivityLog
+    db.add(ActivityLog(
+        user_id=current_user.id,
+        entity_type="user",
+        entity_id=current_user.id,
+        action="account_deleted",
+    ))
+    await db.flush()
     await db.delete(current_user)
     await db.commit()

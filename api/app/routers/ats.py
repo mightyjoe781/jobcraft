@@ -1,3 +1,4 @@
+from app.services.rate_limiter import AtsRateLimit
 import asyncio
 import re
 import uuid
@@ -116,7 +117,7 @@ async def _run_score(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
-@router.post("/score/variant")
+@router.post("/score/variant", dependencies=[AtsRateLimit])
 async def score_variant(
     resume_variant_id: uuid.UUID,
     jd_text: str | None = None,
@@ -167,7 +168,7 @@ async def score_variant(
     return await _run_score(resume_text, jd_text, resume_variant_id, resolved_job_id, current_user, db)
 
 
-@router.post("/score/upload")
+@router.post("/score/upload", dependencies=[AtsRateLimit])
 async def score_upload(
     jd_text: str = Form(...),
     uploaded_pdf: UploadFile = File(...),

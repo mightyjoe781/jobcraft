@@ -2,8 +2,7 @@
 import uuid
 
 import anthropic
-import pdfplumber
-import fitz  # pymupdf
+import fitz  # pymupdf — pdfplumber removed (CVE-2025-64512 pickle RCE)
 
 from app.config import settings
 from app.services.security import check_jd
@@ -80,16 +79,7 @@ _ATS_TOOL = {
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes; fall back to pymupdf if pdfplumber returns < 100 chars."""
-    try:
-        import io
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            text = "\n".join(page.extract_text() or "" for page in pdf.pages)
-        if len(text.strip()) >= 100:
-            return text
-    except Exception:
-        pass
-
+    """Extract text from PDF bytes using pymupdf (pdfplumber removed — CVE-2025-64512)."""
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     return "\n".join(page.get_text() for page in doc)
 

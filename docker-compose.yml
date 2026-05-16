@@ -7,8 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # S-23 fix: no host port mapping — only reachable within Docker network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U jobcraft"]
       interval: 5s
@@ -17,10 +16,10 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    # S-03 fix: Redis requires password; no host port exposure
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -42,7 +41,7 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql+asyncpg://jobcraft:${POSTGRES_PASSWORD}@postgres:5432/jobcraft
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       LATEX_SERVICE_URL: http://latex:8001
     volumes:
       - storage_data:/storage
@@ -56,11 +55,11 @@ services:
 
   worker:
     build: ./api
-    command: celery -A app.workers.celery_app worker --loglevel=info
+    command: celery -A app.workers.celery_app worker --loglevel=warning
     env_file: .env
     environment:
       DATABASE_URL: postgresql+asyncpg://jobcraft:${POSTGRES_PASSWORD}@postgres:5432/jobcraft
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       LATEX_SERVICE_URL: http://latex:8001
     volumes:
       - storage_data:/storage

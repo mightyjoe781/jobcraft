@@ -14,9 +14,16 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = ""
     aws_region: str = "us-east-1"
 
-    # Registration gate — if set, users must provide this token to register.
-    # Leave empty to allow open registration.
+    # Registration gate
     registration_token: str = ""
+
+    # CORS — comma-separated list of allowed origins
+    # Default: localhost only. Set to production domain at deploy time.
+    allowed_origins_str: str = "http://localhost:3000,http://localhost:8000"
+
+    @property
+    def allowed_origins(self) -> list[str]:
+        return [o.strip() for o in self.allowed_origins_str.split(",") if o.strip()]
 
     # JWT
     jwt_algorithm: str = "HS256"
@@ -37,6 +44,9 @@ class Settings(BaseSettings):
     rate_limit_cover_letter: int = 10
     rate_limit_skill_gap: int = 10
     rate_limit_ai_fill: int = 10
+
+    # S-09: per-user daily AI budget in USD (0 = unlimited)
+    daily_ai_budget_usd: float = 2.00
 
     class Config:
         env_file = ".env"

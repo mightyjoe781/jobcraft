@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -10,6 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.models.user import RefreshToken, User
 
+# Dummy hash used to prevent account enumeration via timing
+_DUMMY_HASH = bcrypt.hashpw(b"dummy-constant-password", bcrypt.gensalt()).decode()
+
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode()[:72], bcrypt.gensalt()).decode()
@@ -20,7 +24,8 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def hash_token(token: str) -> str:
-    return hashlib.sha256(token.encode()).hexdigest()
+    # S-17 fix: keyed HMAC instead of plain SHA-256
+    return hmac.new(settings.jwt_secret.encode(), token.encode(), hashlib.sha256).hexdigest()
 
 
 def create_access_token(user_id: uuid.UUID) -> str:
@@ -64,8 +69,17 @@ async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> User | None:
     return result.scalar_one_or_none()
 
 
+async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
+    """S-08 fix: always runs bcrypt to prevent account enumeration via timing."""
+    user = await get_user_by_email(db, email)
+    # Always verify against a hash — prevents timing oracle
+    hash_to_check = user.password_hash if user else _DUMMY_HASH
+    if not verify_password(password, hash_to_check):
+        return None
+    return user
+
+
 async def rotate_refresh_token(db: AsyncSession, raw_token: str) -> tuple[User, str]:
-    """Revoke the given refresh token and issue a new one. Returns (user, new_raw_token)."""
     token_hash = hash_token(raw_token)
     result = await db.execute(
         select(RefreshToken).where(

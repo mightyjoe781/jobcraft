@@ -1,3 +1,4 @@
+from app.services.rate_limiter import CoverLetterRateLimit
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -70,7 +71,7 @@ async def get_cover_letter(
     return _enrich(cl, company, role)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, dependencies=[CoverLetterRateLimit])
 async def create_and_stream(
     body: CoverLetterCreate,
     current_user: User = Depends(get_current_user),

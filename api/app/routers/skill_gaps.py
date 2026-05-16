@@ -1,3 +1,4 @@
+from app.services.rate_limiter import SkillGapRateLimit
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -17,7 +18,7 @@ from app.storage import storage
 router = APIRouter(prefix="/api/skill-gaps", tags=["skill-gaps"])
 
 
-@router.post("/analyze", response_model=list[SkillGapItem], status_code=status.HTTP_201_CREATED)
+@router.post("/analyze", response_model=list[SkillGapItem], status_code=status.HTTP_201_CREATED, dependencies=[SkillGapRateLimit])
 async def analyze(
     body: SkillGapAnalyzeRequest,
     current_user: User = Depends(get_current_user),

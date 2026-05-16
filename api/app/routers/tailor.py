@@ -1,3 +1,4 @@
+from app.services.rate_limiter import TailorRateLimit, AtsRateLimit, CoverLetterRateLimit, SkillGapRateLimit, AiFillRateLimit
 import asyncio
 import uuid
 
@@ -132,7 +133,8 @@ async def fetch_jd(body: FetchJdRequest):
     return FetchJdResponse(company="", role_title="", jd_text=text)
 
 
-@router.post("/tailor", response_model=TailorResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.post("/tailor", response_model=TailorResponse, status_code=status.HTTP_202_ACCEPTED,
+             dependencies=[TailorRateLimit])
 async def start_tailoring(
     body: TailorRequest,
     current_user: User = Depends(get_current_user),

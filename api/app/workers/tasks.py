@@ -1,8 +1,11 @@
 import asyncio
 import json
+import logging
 import uuid
 
 from app.workers.celery_app import celery_app
+
+logger = logging.getLogger(__name__)
 
 
 def _make_session():
@@ -23,6 +26,8 @@ def run_tailoring_task(
     aggressiveness: str,
     custom_instruction: str | None,
 ):
+    # S-14: log task metadata only, never log tex source or JD text
+    logger.info("run_tailoring task=%s aggressiveness=%s", variant_id, aggressiveness)
     asyncio.run(
         _async_tailor(
             uuid.UUID(variant_id),
@@ -137,6 +142,8 @@ async def _async_tailor(
 
 @celery_app.task(name="tasks.run_ats_score")
 def run_ats_score_task(score_id: str, resume_text: str, jd_text: str):
+    # S-14: log score ID only — resume_text and jd_text are not logged
+    logger.info("run_ats_score score_id=%s", score_id)
     asyncio.run(_async_ats(uuid.UUID(score_id), resume_text, jd_text))
 
 
