@@ -33,7 +33,8 @@ export function PdfViewer({ apiPath, className = "w-full h-full", title = "PDF" 
 
   if (!objectUrl) return null;
 
-  return <iframe src={objectUrl} className={className} title={title} />;
+  // #toolbar=0&navpanes=0 suppresses the browser PDF viewer's sidebar and toolbar
+  return <iframe src={`${objectUrl}#toolbar=0&navpanes=0`} className={className} title={title} />;
 }
 
 /**
