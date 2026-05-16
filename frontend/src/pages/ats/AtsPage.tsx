@@ -185,16 +185,16 @@ export default function AtsPage() {
       let result: atsApi.AtsScore | atsApi.AsyncScoreResponse;
 
       if (tab === "variant") {
-        result = await atsApi.submitScore({ resume_variant_id: variantId, jd_text: jdText || undefined });
+        if (!variantId) { setError("Select a variant"); setSubmitting(false); return; }
+        result = await atsApi.submitVariantScore(variantId, jdText || undefined);
       } else {
         if (!pdfFile) { setError("Upload a PDF"); setSubmitting(false); return; }
         if (!jdText.trim()) { setError("Add a job description"); setSubmitting(false); return; }
-        // multipart form for PDF upload
         const form = new FormData();
         form.append("uploaded_pdf", pdfFile);
         form.append("jd_text", jdText);
         const token = localStorage.getItem("access_token");
-        const res = await fetch("/api/ats/score", {
+        const res = await fetch("/api/ats/score/upload", {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: form,

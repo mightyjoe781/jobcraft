@@ -1,7 +1,9 @@
 import asyncio
+import re
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,14 +14,29 @@ from app.models.ats import AtsScore
 from app.models.job import Job
 from app.models.resume import ResumeVariant
 from app.models.user import User
-from app.schemas.ats import AtsScoreOut, AtsBreakdown, MissingKeyword, Suggestion
+from app.schemas.ats import AtsBreakdown, AtsScoreOut, MissingKeyword, Suggestion
 from app.services.ats import extract_pdf_text, score_resume
 from app.storage import storage
 from app.workers.tasks import run_ats_score_task
 
 router = APIRouter(prefix="/api/ats", tags=["ats"])
 
-_SYNC_TIMEOUT = 11  # seconds before falling back to async
+_SYNC_TIMEOUT = 11
+
+
+def _strip_latex(tex: str) -> str:
+    """Strip LaTeX commands so Claude sees plain readable text."""
+    # Remove comments
+    tex = re.sub(r"%.*$", "", tex, flags=re.MULTILINE)
+    # Remove common commands with arguments: \cmd{...}
+    tex = re.sub(r"\\[a-zA-Z]+\*?\{([^}]*)\}", r"\1", tex)
+    # Remove commands without arguments: \cmd
+    tex = re.sub(r"\\[a-zA-Z]+\*?", " ", tex)
+    # Remove remaining braces and special chars
+    tex = re.sub(r"[{}\[\]\\$&_^#~]", " ", tex)
+    # Collapse whitespace
+    tex = re.sub(r"\s+", " ", tex).strip()
+    return tex
 
 
 def _build_out(row: AtsScore) -> AtsScoreOut:
@@ -43,63 +60,15 @@ def _build_out(row: AtsScore) -> AtsScoreOut:
     )
 
 
-@router.post("/score", status_code=status.HTTP_200_OK)
-async def score(
-    resume_variant_id: uuid.UUID | None = None,
-    job_id: uuid.UUID | None = None,
-    jd_text: str | None = None,
-    uploaded_pdf: UploadFile | None = File(None),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+async def _run_score(
+    resume_text: str,
+    jd_text: str,
+    resume_variant_id: uuid.UUID | None,
+    resolved_job_id: uuid.UUID | None,
+    current_user: User,
+    db: AsyncSession,
 ):
-    """
-    Score a resume against a JD. Sync-first: returns full result in 200 if Claude
-    responds within 11s; returns 202 with score_id for polling otherwise.
-    """
-    # Resolve resume text
-    resume_text: str = ""
-    resolved_job_id: uuid.UUID | None = job_id
-
-    if uploaded_pdf is not None:
-        content = await uploaded_pdf.read()
-        if len(content) > settings.pdf_upload_max_bytes:
-            raise HTTPException(status_code=413, detail="PDF exceeds 5MB limit")
-        resume_text = extract_pdf_text(content)
-    elif resume_variant_id:
-        v_result = await db.execute(
-            select(ResumeVariant).where(
-                ResumeVariant.id == resume_variant_id,
-                ResumeVariant.user_id == current_user.id,
-            )
-        )
-        variant = v_result.scalar_one_or_none()
-        if not variant:
-            raise HTTPException(status_code=404, detail="Variant not found")
-        if not variant.pdf_path:
-            # Use tex source as text
-            tex = (await storage.get(variant.modified_tex_path)).decode()
-            resume_text = tex
-        else:
-            pdf_bytes = await storage.get(variant.pdf_path)
-            resume_text = extract_pdf_text(pdf_bytes)
-        if not resolved_job_id:
-            resolved_job_id = variant.job_id
-    else:
-        raise HTTPException(status_code=422, detail="Provide resume_variant_id or upload a PDF")
-
-    # Resolve JD text
-    if not jd_text and resolved_job_id:
-        j_result = await db.execute(
-            select(Job).where(Job.id == resolved_job_id, Job.user_id == current_user.id)
-        )
-        job = j_result.scalar_one_or_none()
-        if job:
-            jd_text = job.jd_text
-
-    if not jd_text:
-        raise HTTPException(status_code=422, detail="Provide jd_text or a job_id with JD text")
-
-    # Create score row in pending state
+    """Shared sync-first scoring logic."""
     score_row = AtsScore(
         user_id=current_user.id,
         resume_variant_id=resume_variant_id,
@@ -110,7 +79,6 @@ async def score(
     await db.commit()
     await db.refresh(score_row)
 
-    # Try sync path
     try:
         data = await asyncio.wait_for(
             score_resume(resume_text, jd_text),
@@ -123,12 +91,8 @@ async def score(
             "missing_keywords": data.get("missing_keywords", []),
             "suggestions": data.get("suggestions", []),
         }
-        # Update variant ATS score
         if resume_variant_id:
-            v2 = await db.execute(
-                select(ResumeVariant).where(ResumeVariant.id == resume_variant_id)
-            )
-            v = v2.scalar_one_or_none()
+            v = await db.get(ResumeVariant, resume_variant_id)
             if v:
                 v.ats_score = data["overall_score"]
         await db.commit()
@@ -136,9 +100,7 @@ async def score(
         return _build_out(score_row)
 
     except asyncio.TimeoutError:
-        # Async fallback
         run_ats_score_task.delay(str(score_row.id), resume_text, jd_text)
-        from fastapi.responses import JSONResponse
         return JSONResponse(
             status_code=202,
             content={
@@ -152,6 +114,76 @@ async def score(
         score_row.error_message = str(exc)
         await db.commit()
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/score/variant")
+async def score_variant(
+    resume_variant_id: uuid.UUID,
+    jd_text: str | None = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Score a variant already in the system. Accepts JSON query params."""
+    v_result = await db.execute(
+        select(ResumeVariant).where(
+            ResumeVariant.id == resume_variant_id,
+            ResumeVariant.user_id == current_user.id,
+        )
+    )
+    variant = v_result.scalar_one_or_none()
+    if not variant:
+        raise HTTPException(status_code=404, detail="Variant not found")
+
+    resolved_job_id = variant.job_id
+
+    # Prefer PDF text extraction; fall back to stripped LaTeX
+    if variant.pdf_path:
+        try:
+            pdf_bytes = await storage.get(variant.pdf_path)
+            resume_text = extract_pdf_text(pdf_bytes)
+        except Exception:
+            tex = (await storage.get(variant.modified_tex_path)).decode()
+            resume_text = _strip_latex(tex)
+    else:
+        tex = (await storage.get(variant.modified_tex_path)).decode()
+        resume_text = _strip_latex(tex)
+
+    # Validate resume text is meaningful
+    if len(resume_text.strip()) < 100:
+        raise HTTPException(
+            status_code=422,
+            detail="Resume text is too short to score. The variant may still be rendering — try again in a moment.",
+        )
+
+    # Resolve JD
+    if not jd_text and resolved_job_id:
+        job = await db.get(Job, resolved_job_id)
+        if job:
+            jd_text = job.jd_text
+
+    if not jd_text:
+        raise HTTPException(status_code=422, detail="No job description found. Provide jd_text or link the variant to a job.")
+
+    return await _run_score(resume_text, jd_text, resume_variant_id, resolved_job_id, current_user, db)
+
+
+@router.post("/score/upload")
+async def score_upload(
+    jd_text: str = Form(...),
+    uploaded_pdf: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Score an uploaded PDF against a pasted JD."""
+    content = await uploaded_pdf.read()
+    if len(content) > settings.pdf_upload_max_bytes:
+        raise HTTPException(status_code=413, detail="PDF exceeds 5MB limit")
+
+    resume_text = extract_pdf_text(content)
+    if len(resume_text.strip()) < 100:
+        raise HTTPException(status_code=422, detail="Could not extract enough text from the PDF.")
+
+    return await _run_score(resume_text, jd_text, None, None, current_user, db)
 
 
 @router.get("/scores", response_model=list[AtsScoreOut])

@@ -39,15 +39,11 @@ export interface AsyncScoreResponse {
   poll_url: string;
 }
 
-export const submitScore = (body: {
-  resume_variant_id?: string;
-  job_id?: string;
-  jd_text?: string;
-}) =>
-  apiFetch<AtsScore | AsyncScoreResponse>("/ats/score", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+export const submitVariantScore = (resume_variant_id: string, jd_text?: string) => {
+  const params = new URLSearchParams({ resume_variant_id });
+  if (jd_text) params.set("jd_text", jd_text);
+  return apiFetch<AtsScore | AsyncScoreResponse>(`/ats/score/variant?${params}`, { method: "POST" });
+};
 
 export const getScore = (id: string) => apiFetch<AtsScore>(`/ats/scores/${id}`);
 export const listScores = () => apiFetch<AtsScore[]>("/ats/scores");

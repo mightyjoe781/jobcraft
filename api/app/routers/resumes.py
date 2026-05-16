@@ -470,6 +470,14 @@ async def get_variant_pdf(
             pass
 
     tex = (await storage.get(variant.modified_tex_path)).decode()
+
+    # Detect placeholder — Celery worker hasn't finished yet
+    if tex.strip() in ("% placeholder", "") or len(tex.strip()) < 50:
+        raise HTTPException(
+            status_code=202,
+            detail="Variant is still being processed. Please wait a moment and try again.",
+        )
+
     try:
         pdf_bytes = await latex_client.render(tex)
     except ValueError as exc:

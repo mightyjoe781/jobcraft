@@ -28,8 +28,15 @@ export function usePdfBlob(apiPath: string | null) {
     fetch(apiPath, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
-      .then((res) => {
-        if (!res.ok) throw new Error(`PDF fetch failed: ${res.status}`);
+      .then(async (res) => {
+        if (res.status === 202) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.detail ?? "Still processing — try again in a moment");
+        }
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.detail ?? `PDF fetch failed: ${res.status}`);
+        }
         return res.blob();
       })
       .then((blob) => {
