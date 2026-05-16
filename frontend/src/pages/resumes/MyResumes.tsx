@@ -93,38 +93,45 @@ export default function MyResumes() {
           {resumes.map((r) => (
             <div
               key={r.id}
-              className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3 hover:border-gray-300 transition-colors shadow-sm"
+              className="group bg-white rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all shadow-sm flex flex-col cursor-pointer"
+              onClick={() => navigate(`/resumes/editor/${r.id}`)}
             >
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-gray-900 font-semibold truncate">{r.label}</h3>
-                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded shrink-0">
-                  {sourceLabel(r)}
-                </span>
+              {/* Card body */}
+              <div className="p-5 flex-1">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="text-gray-900 font-semibold leading-tight">{r.label}</h3>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
+                    {sourceLabel(r)}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-xs">
+                  {r.variant_count} variant{r.variant_count !== 1 ? "s" : ""} · Updated {new Date(r.updated_at).toLocaleDateString()}
+                </p>
               </div>
-              <p className="text-gray-400 text-xs">
-                {r.variant_count} variant{r.variant_count !== 1 ? "s" : ""} ·{" "}
-                Updated {new Date(r.updated_at).toLocaleDateString()}
-              </p>
-              <div className="flex gap-2 mt-auto">
-                <button
-                  onClick={() => navigate(`/resumes/editor/${r.id}`)}
-                  className="flex-1 bg-accent hover:bg-accent-hover text-white text-sm rounded-lg py-1.5 transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => setPreviewId(r.id)}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg px-3 py-1.5 transition-colors"
-                >
-                  Preview
-                </button>
-                <button
-                  onClick={() => handleDelete(r.id)}
-                  disabled={deleting === r.id}
-                  className="bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-600 text-sm rounded-lg px-3 py-1.5 transition-colors"
-                >
-                  {deleting === r.id ? "…" : "Delete"}
-                </button>
+
+              {/* Footer */}
+              <div
+                className="px-5 py-3 border-t border-gray-100 flex items-center justify-between"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="text-indigo-600 text-xs font-medium group-hover:underline">
+                  Open editor →
+                </span>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setPreviewId(r.id)}
+                    className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                  >
+                    Preview
+                  </button>
+                  <button
+                    onClick={() => void handleDelete(r.id)}
+                    disabled={deleting === r.id}
+                    className="text-xs text-gray-400 hover:text-red-600 disabled:opacity-50 transition-colors"
+                  >
+                    {deleting === r.id ? "…" : "Delete"}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
