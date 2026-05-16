@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import * as resumeApi from "../../api/resumes";
 import type { Snapshot } from "../../api/resumes";
 import { PdfViewer } from "../../components/PdfViewer";
+import { ConfirmModal } from "../../components/ConfirmModal";
 
 type SaveStatus = "saved" | "saving" | "unsaved" | "error";
 
@@ -34,6 +35,9 @@ export default function ResumeEditor() {
   const [sections, setSections] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isNewRef = useRef(!id);
+
+  // Alert modal state
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   // Load initial content
   useEffect(() => {
@@ -85,7 +89,7 @@ export default function ResumeEditor() {
     if (!resumeId) {
       // First save — create the record
       if (!label.trim()) {
-        alert("Please enter a label for this resume before saving");
+        setAlertMsg("Please enter a label for this resume before saving");
         return;
       }
       setSaveStatus("saving");
@@ -114,7 +118,7 @@ export default function ResumeEditor() {
 
   async function handleRender() {
     if (!resumeId) {
-      alert("Save your resume first before rendering");
+      setAlertMsg("Save your resume first before rendering");
       return;
     }
     setRendering(true);
@@ -144,7 +148,7 @@ export default function ResumeEditor() {
 
   async function handleAiFill() {
     if (!resumeId) {
-      alert("Save your resume first");
+      setAlertMsg("Save your resume first");
       return;
     }
     setFilling(true);
@@ -155,7 +159,7 @@ export default function ResumeEditor() {
       setShowAiFill(false);
     } catch (err: unknown) {
       const e = err as { message?: string };
-      alert(e.message ?? "AI fill failed");
+      setAlertMsg(e.message ?? "AI fill failed");
     } finally {
       setFilling(false);
     }
@@ -170,6 +174,14 @@ export default function ResumeEditor() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      <ConfirmModal
+        open={!!alertMsg}
+        title="Notice"
+        message={alertMsg ?? ""}
+        alertOnly
+        onConfirm={() => setAlertMsg(null)}
+        onCancel={() => setAlertMsg(null)}
+      />
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 bg-white border-b border-gray-200 shrink-0">
         <input

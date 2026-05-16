@@ -13,6 +13,8 @@ import type { SkillGap, GapStatus } from "../../api/skillGaps";
 import type { CoverLetter } from "../../api/coverLetters";
 import { STATUS_LABELS, STATUS_ORDER } from "../../api/applications";
 import { PdfViewer, PdfDownloadLink } from "../../components/PdfViewer";
+import { ConfirmModal } from "../../components/ConfirmModal";
+import { InputModal } from "../../components/InputModal";
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
@@ -292,33 +294,93 @@ function VariantsTab({
   const [previewId, setPreviewId] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Delete confirm modal state
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleteAlertMsg, setDeleteAlertMsg] = useState<string | null>(null);
+
+  // Fork input modal state
+  const [forkOpen, setForkOpen] = useState(false);
+  const [pendingForkVariant, setPendingForkVariant] = useState<Variant | null>(null);
+  const [forkAlertMsg, setForkAlertMsg] = useState<string | null>(null);
+
   useEffect(() => {
     setLoading(true);
     resumeApi.listVariants(app.job_id).then(setVariants).finally(() => setLoading(false));
   }, [app.job_id]);
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this variant?")) return;
+  function handleDelete(id: string) {
+    setPendingDeleteId(id);
+    setDeleteOpen(true);
+  }
+
+  async function confirmDelete() {
+    setDeleteOpen(false);
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     try {
       await resumeApi.deleteVariant(id);
       setVariants((prev) => prev.filter((v) => v.id !== id));
-    } catch { alert("Delete failed"); }
+    } catch { setDeleteAlertMsg("Delete failed"); }
   }
 
-  async function handleFork(v: Variant) {
-    const label = prompt("Label for new base resume:", `${app.company} fork`);
-    if (!label) return;
+  function handleFork(v: Variant) {
+    setPendingForkVariant(v);
+    setForkOpen(true);
+  }
+
+  async function confirmFork(label: string) {
+    setForkOpen(false);
+    if (!pendingForkVariant) return;
+    const v = pendingForkVariant;
+    setPendingForkVariant(null);
     try {
       const diff = await resumeApi.getVariantDiff(v.id);
       await resumeApi.createBaseResume({ label, source_type: "forked_variant", source_variant_id: v.id, tex_source: diff.modified_tex });
-      alert(`Forked as "${label}" — now in My Resumes`);
-    } catch { alert("Fork failed"); }
+      setForkAlertMsg(`Forked as "${label}" — now in My Resumes`);
+    } catch { setForkAlertMsg("Fork failed"); }
   }
 
   if (loading) return <div className="p-6 text-gray-400 text-sm">Loading variants…</div>;
 
   return (
     <div className="p-5">
+      <ConfirmModal
+        open={deleteOpen}
+        title="Delete variant"
+        message="Delete this variant? This cannot be undone."
+        confirmLabel="Delete"
+        danger
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => { setDeleteOpen(false); setPendingDeleteId(null); }}
+      />
+      <ConfirmModal
+        open={!!deleteAlertMsg}
+        title="Error"
+        message={deleteAlertMsg ?? ""}
+        alertOnly
+        onConfirm={() => setDeleteAlertMsg(null)}
+        onCancel={() => setDeleteAlertMsg(null)}
+      />
+      <InputModal
+        open={forkOpen}
+        title="Fork variant as base resume"
+        label="Label for new base resume"
+        defaultValue={pendingForkVariant ? `${app.company} fork` : ""}
+        confirmLabel="Fork"
+        onConfirm={(label) => void confirmFork(label)}
+        onCancel={() => { setForkOpen(false); setPendingForkVariant(null); }}
+      />
+      <ConfirmModal
+        open={!!forkAlertMsg}
+        title="Fork"
+        message={forkAlertMsg ?? ""}
+        alertOnly
+        onConfirm={() => setForkAlertMsg(null)}
+        onCancel={() => setForkAlertMsg(null)}
+      />
+
       <div className="flex items-center justify-between mb-4">
         <p className="text-gray-500 text-sm">{variants.length} variant{variants.length !== 1 ? "s" : ""} for this job</p>
         <button onClick={() => navigate(`/apply?job_id=${app.job_id}`)}
@@ -609,6 +671,7 @@ function DetailsTab({
   const [followUp, setFollowUp] = useState(app.follow_up_date ?? "");
   const [savingJd, setSavingJd] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
 
   // Sync when app changes (different job selected)
   useEffect(() => {
@@ -697,13 +760,19 @@ function DetailsTab({
           className={INPUT + " resize-y"} />
       </div>
 
+      <ConfirmModal
+        open={removeOpen}
+        title="Remove from tracking"
+        message={`Remove "${app.company} — ${app.role_title}" from tracking?\n\nThis will also delete all tailored variants for this job. This cannot be undone.`}
+        confirmLabel="Remove"
+        danger
+        onConfirm={() => { setRemoveOpen(false); void onDelete(app.id); }}
+        onCancel={() => setRemoveOpen(false)}
+      />
+
       <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
         <button
-          onClick={() => {
-            if (confirm(`Remove "${app.company} — ${app.role_title}" from tracking?\n\nThis will also delete all tailored variants for this job. This cannot be undone.`)) {
-              void onDelete(app.id);
-            }
-          }}
+          onClick={() => setRemoveOpen(true)}
           className="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg px-3 py-1.5 transition-colors"
         >
           Remove from tracking
@@ -812,6 +881,7 @@ export default function ApplicationsPage() {
     new Set(["rejected", "withdrawn"])
   );
   const [showFilter, setShowFilter] = useState(false);
+  const [deleteErrorMsg, setDeleteErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     appApi.listApplications()
@@ -852,7 +922,7 @@ export default function ApplicationsPage() {
       });
     } catch (err: unknown) {
       const e = err as { message?: string };
-      alert(`Failed to delete: ${e.message ?? "unknown error"}`);
+      setDeleteErrorMsg(`Failed to delete: ${e.message ?? "unknown error"}`);
     }
   }
 
@@ -873,6 +943,14 @@ export default function ApplicationsPage() {
 
   return (
     <div className="flex h-full overflow-hidden">
+      <ConfirmModal
+        open={!!deleteErrorMsg}
+        title="Error"
+        message={deleteErrorMsg ?? ""}
+        alertOnly
+        onConfirm={() => setDeleteErrorMsg(null)}
+        onCancel={() => setDeleteErrorMsg(null)}
+      />
       {/* ── Left panel: job list ── */}
       <div className="w-80 shrink-0 border-r border-gray-200 flex flex-col">
         {/* Header */}

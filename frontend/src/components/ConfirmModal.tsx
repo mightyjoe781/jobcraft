@@ -7,23 +7,15 @@ interface Props {
   confirmLabel?: string;
   cancelLabel?: string;
   danger?: boolean;
+  alertOnly?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-/**
- * Drop-in replacement for window.confirm().
- * Usage:
- *   const [dialog, setDialog] = useState<ConfirmState | null>(null);
- *   ...
- *   <ConfirmModal open={!!dialog} title={dialog.title} message={dialog.message}
- *     onConfirm={() => { handleDelete(); setDialog(null); }}
- *     onCancel={() => setDialog(null)} />
- */
 export function ConfirmModal({
   open, title, message,
   confirmLabel = "Confirm", cancelLabel = "Cancel",
-  danger = false,
+  danger = false, alertOnly = false,
   onConfirm, onCancel,
 }: Props) {
   useEffect(() => {
@@ -40,26 +32,23 @@ export function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={alertOnly ? onConfirm : onCancel} />
       <div className="relative bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-sm mx-4 p-6">
         <h3 className="text-gray-900 font-semibold text-base mb-2">{title}</h3>
         <p className="text-gray-500 text-sm leading-relaxed mb-6">{message}</p>
         <div className="flex gap-3 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            {cancelLabel}
-          </button>
+          {!alertOnly && (
+            <button onClick={onCancel} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+              {cancelLabel}
+            </button>
+          )}
           <button
             onClick={onConfirm}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              danger
-                ? "bg-red-600 hover:bg-red-700 text-white"
-                : "bg-indigo-600 hover:bg-indigo-700 text-white"
+              danger ? "bg-red-600 hover:bg-red-700 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
             }`}
           >
-            {confirmLabel}
+            {alertOnly ? "OK" : confirmLabel}
           </button>
         </div>
       </div>

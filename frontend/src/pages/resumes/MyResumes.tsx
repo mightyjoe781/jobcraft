@@ -4,6 +4,7 @@ import * as resumeApi from "../../api/resumes";
 import type { BaseResume } from "../../api/resumes";
 import { PdfViewer } from "../../components/PdfViewer";
 import { TemplatePickerModal } from "../../components/TemplatePickerModal";
+import { ConfirmModal } from "../../components/ConfirmModal";
 
 function sourceLabel(r: BaseResume): string {
   if (r.source_type === "template") return "From template";
@@ -19,23 +20,38 @@ export default function MyResumes() {
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const navigate = useNavigate();
 
+  // Delete confirm modal state
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleteConfirmMsg, setDeleteConfirmMsg] = useState("");
+  const [deleteErrorMsg, setDeleteErrorMsg] = useState<string | null>(null);
+
   useEffect(() => {
     resumeApi.listBaseResumes().then(setResumes).finally(() => setLoading(false));
   }, []);
 
-  async function handleDelete(id: string) {
+  function handleDelete(id: string) {
     const resume = resumes.find((r) => r.id === id);
     const variantWarn = (resume?.variant_count ?? 0) > 0
       ? ` Tailored variants linked to it will be kept but unlinked.`
       : "";
-    if (!confirm(`Delete this base resume?${variantWarn} Snapshots will be removed. This cannot be undone.`)) return;
+    setDeleteConfirmMsg(`Delete this base resume?${variantWarn} Snapshots will be removed. This cannot be undone.`);
+    setPendingDeleteId(id);
+    setDeleteOpen(true);
+  }
+
+  async function confirmDelete() {
+    setDeleteOpen(false);
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     setDeleting(id);
     try {
       await resumeApi.deleteBaseResume(id);
       setResumes((prev) => prev.filter((r) => r.id !== id));
     } catch (err: unknown) {
       const e = err as { message?: string };
-      alert(`Failed to delete: ${e.message ?? "unknown error"}`);
+      setDeleteErrorMsg(`Failed to delete: ${e.message ?? "unknown error"}`);
     } finally {
       setDeleting(null);
     }
@@ -43,6 +59,23 @@ export default function MyResumes() {
 
   return (
     <div className="p-8">
+      <ConfirmModal
+        open={deleteOpen}
+        title="Delete base resume"
+        message={deleteConfirmMsg}
+        confirmLabel="Delete"
+        danger
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => { setDeleteOpen(false); setPendingDeleteId(null); }}
+      />
+      <ConfirmModal
+        open={!!deleteErrorMsg}
+        title="Error"
+        message={deleteErrorMsg ?? ""}
+        alertOnly
+        onConfirm={() => setDeleteErrorMsg(null)}
+        onCancel={() => setDeleteErrorMsg(null)}
+      />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">My Resumes</h1>

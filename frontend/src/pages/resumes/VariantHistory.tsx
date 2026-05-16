@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import * as resumeApi from "../../api/resumes";
 import type { DiffOut, Variant } from "../../api/resumes";
 import { PdfDownloadLink, PdfViewer } from "../../components/PdfViewer";
+import { ConfirmModal } from "../../components/ConfirmModal";
+import { InputModal } from "../../components/InputModal";
 
 function AtsScoreBadge({ score }: { score: number | null }) {
   if (score === null) return <span className="text-gray-600 text-xs">—</span>;
@@ -21,6 +23,16 @@ export default function VariantHistory() {
   const [diffLoading, setDiffLoading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  // Delete confirm modal state
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleteAlertMsg, setDeleteAlertMsg] = useState<string | null>(null);
+
+  // Fork input modal state
+  const [forkOpen, setForkOpen] = useState(false);
+  const [pendingForkVariant, setPendingForkVariant] = useState<Variant | null>(null);
+  const [forkAlertMsg, setForkAlertMsg] = useState<string | null>(null);
+
   useEffect(() => {
     resumeApi.listVariants().then(setVariants).finally(() => setLoading(false));
   }, []);
@@ -37,38 +49,87 @@ export default function VariantHistory() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this variant? This cannot be undone.")) return;
+  function handleDelete(id: string) {
+    setPendingDeleteId(id);
+    setDeleteOpen(true);
+  }
+
+  async function confirmDelete() {
+    setDeleteOpen(false);
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     setDeleting(id);
     try {
       await resumeApi.deleteVariant(id);
       setVariants((prev) => prev.filter((v) => v.id !== id));
     } catch {
-      alert("Failed to delete variant");
+      setDeleteAlertMsg("Failed to delete variant");
     } finally {
       setDeleting(null);
     }
   }
 
-  async function handleForkAsBase(v: Variant) {
-    const label = prompt("Label for new base resume:", `${v.company ?? "Unknown"} fork`);
-    if (!label) return;
+  function handleForkAsBase(v: Variant) {
+    setPendingForkVariant(v);
+    setForkOpen(true);
+  }
+
+  async function confirmFork(label: string) {
+    setForkOpen(false);
+    if (!pendingForkVariant) return;
+    const v = pendingForkVariant;
+    setPendingForkVariant(null);
     try {
-      const diff = await resumeApi.getVariantDiff(v.id);
+      const d = await resumeApi.getVariantDiff(v.id);
       await resumeApi.createBaseResume({
         label,
         source_type: "forked_variant",
         source_variant_id: v.id,
-        tex_source: diff.modified_tex,
+        tex_source: d.modified_tex,
       });
-      alert("Forked — go to My Resumes to edit it");
+      setForkAlertMsg("Forked — go to My Resumes to edit it");
     } catch {
-      alert("Fork failed");
+      setForkAlertMsg("Fork failed");
     }
   }
 
   return (
     <div className="p-8">
+      <ConfirmModal
+        open={deleteOpen}
+        title="Delete variant"
+        message="Delete this variant? This cannot be undone."
+        confirmLabel="Delete"
+        danger
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => { setDeleteOpen(false); setPendingDeleteId(null); }}
+      />
+      <ConfirmModal
+        open={!!deleteAlertMsg}
+        title="Error"
+        message={deleteAlertMsg ?? ""}
+        alertOnly
+        onConfirm={() => setDeleteAlertMsg(null)}
+        onCancel={() => setDeleteAlertMsg(null)}
+      />
+      <InputModal
+        open={forkOpen}
+        title="Fork variant as base resume"
+        label="Label for new base resume"
+        defaultValue={pendingForkVariant ? `${pendingForkVariant.company ?? "Unknown"} fork` : ""}
+        confirmLabel="Fork"
+        onConfirm={(label) => void confirmFork(label)}
+        onCancel={() => { setForkOpen(false); setPendingForkVariant(null); }}
+      />
+      <ConfirmModal
+        open={!!forkAlertMsg}
+        title="Fork"
+        message={forkAlertMsg ?? ""}
+        alertOnly
+        onConfirm={() => setForkAlertMsg(null)}
+        onCancel={() => setForkAlertMsg(null)}
+      />
       <h1 className="text-2xl font-bold text-white mb-1">Tailored Variants</h1>
       <p className="text-gray-400 text-sm mb-6">All AI-tailored resumes generated from your base resumes.</p>
 

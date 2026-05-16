@@ -6,6 +6,7 @@ import { PdfDownloadLink } from "../../components/PdfViewer";
 import type { CoverLetter, CoverLetterTone } from "../../api/coverLetters";
 import type { Job } from "../../api/tailor";
 import type { Variant } from "../../api/resumes";
+import { ConfirmModal } from "../../components/ConfirmModal";
 
 const TONES: { value: CoverLetterTone; label: string; desc: string }[] = [
   { value: "formal", label: "Formal", desc: "Professional and precise" },
@@ -87,6 +88,10 @@ export default function CoverLettersPage() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Delete confirm modal state
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
   useEffect(() => {
     Promise.all([
       tailorApi.listJobs(),
@@ -158,8 +163,16 @@ export default function CoverLettersPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this cover letter?")) return;
+  function handleDelete(id: string) {
+    setPendingDeleteId(id);
+    setDeleteOpen(true);
+  }
+
+  async function confirmDelete() {
+    setDeleteOpen(false);
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     await coverLetterApi.deleteCoverLetter(id);
     setLetters((prev) => prev.filter((cl) => cl.id !== id));
     if (activeLetterId === id) {
@@ -178,6 +191,15 @@ export default function CoverLettersPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <ConfirmModal
+        open={deleteOpen}
+        title="Delete cover letter"
+        message="Delete this cover letter? This cannot be undone."
+        confirmLabel="Delete"
+        danger
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => { setDeleteOpen(false); setPendingDeleteId(null); }}
+      />
       {/* Left panel — form */}
       <div className="w-80 shrink-0 border-r border-gray-200 bg-white flex flex-col overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
