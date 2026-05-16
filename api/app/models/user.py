@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, DateTime, ForeignKey, func
+from sqlalchemy import Boolean, String, DateTime, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -17,6 +17,7 @@ class User(Base):
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
     tailoring_preference: Mapped[str] = mapped_column(String, nullable=False, default="balanced")
     plan: Mapped[str] = mapped_column(String, nullable=False, default="free")
+    is_disabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     org_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

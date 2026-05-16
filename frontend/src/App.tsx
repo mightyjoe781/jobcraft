@@ -12,6 +12,8 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import ApplicationsPage from "./pages/applications/ApplicationsPage";
 import ApplyPage from "./pages/apply/ApplyPage";
 import { useAuth } from "./hooks/useAuth";
+import { RequireAdmin } from "./components/RequireAdmin";
+import AdminPage from "./pages/admin/AdminPage";
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -77,6 +79,7 @@ export default function App() {
         />
 
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>

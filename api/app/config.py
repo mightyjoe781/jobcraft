@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     # Registration gate
     registration_token: str = ""
 
+    # Admin — email of the designated admin user (regular account + elevated API access)
+    admin_email: str = ""
+
     # CORS — comma-separated list of allowed origins
     # Default: localhost only. Set to production domain at deploy time.
     allowed_origins_str: str = "http://localhost:3000,http://localhost:8000"

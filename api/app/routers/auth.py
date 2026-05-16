@@ -30,10 +30,12 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 def _token_response(user: User, refresh_token: str) -> TokenResponse:
+    user_out = UserOut.model_validate(user)
+    user_out.is_admin = bool(settings.admin_email and user.email == settings.admin_email)
     return TokenResponse(
         access_token=create_access_token(user.id),
         refresh_token=refresh_token,
-        user=UserOut.model_validate(user),
+        user=user_out,
     )
 
 
@@ -45,9 +47,20 @@ def auth_config():
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    # S-16: timing-safe comparison prevents oracle attacks
-    if settings.registration_token and not hmac.compare_digest(body.registration_token, settings.registration_token):
-        raise HTTPException(status_code=403, detail="Invalid registration token")
+    # Accept permanent token OR a valid single-use Redis invite token
+    if settings.registration_token:
+        permanent_ok = hmac.compare_digest(body.registration_token, settings.registration_token)
+        invite_ok = False
+        if not permanent_ok and body.registration_token:
+            import redis.asyncio as aioredis
+            r = aioredis.from_url(settings.redis_url, decode_responses=True)
+            try:
+                deleted = await r.delete(f"invite:{body.registration_token}")
+                invite_ok = deleted > 0
+            finally:
+                await r.aclose()
+        if not permanent_ok and not invite_ok:
+            raise HTTPException(status_code=403, detail="Invalid registration token")
 
     existing = await get_user_by_email(db, body.email)
     if existing:
@@ -72,6 +85,8 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
     user = await authenticate_user(db, body.email, body.password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    if user.is_disabled:
+        raise HTTPException(status_code=403, detail="Account disabled")
 
     refresh = await store_refresh_token(db, user.id)
     await db.commit()
@@ -94,7 +109,9 @@ async def logout(body: LogoutRequest, db: AsyncSession = Depends(get_db)):
 
 @router.get("/me", response_model=UserOut)
 async def me(current_user: User = Depends(get_current_user)):
-    return UserOut.model_validate(current_user)
+    out = UserOut.model_validate(current_user)
+    out.is_admin = bool(settings.admin_email and current_user.email == settings.admin_email)
+    return out
 
 
 @router.patch("/me", response_model=UserOut)
@@ -109,7 +126,9 @@ async def update_me(
         current_user.tailoring_preference = body.tailoring_preference
     await db.commit()
     await db.refresh(current_user)
-    return UserOut.model_validate(current_user)
+    out = UserOut.model_validate(current_user)
+    out.is_admin = bool(settings.admin_email and current_user.email == settings.admin_email)
+    return out
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

@@ -39,6 +39,7 @@ class UserOut(BaseModel):
     avatar_url: str | None
     tailoring_preference: str
     plan: str
+    is_admin: bool = False
     created_at: datetime
 
     model_config = {"from_attributes": True}

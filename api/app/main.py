@@ -16,6 +16,7 @@ from app.routers import skill_gaps as skill_gaps_router
 from app.routers import dashboard as dashboard_router
 from app.routers import cover_letters as cover_letters_router
 from app.routers import applications as applications_router
+from app.routers import admin as admin_router
 from app.services.seed import seed_templates
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,7 @@ app.include_router(skill_gaps_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(cover_letters_router.router)
 app.include_router(applications_router.router)
+app.include_router(admin_router.router)
 
 
 @app.get("/health")

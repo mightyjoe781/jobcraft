@@ -5,6 +5,7 @@ export interface User {
   avatar_url: string | null;
   tailoring_preference: "conservative" | "balanced" | "aggressive";
   plan: string;
+  is_admin: boolean;
   created_at: string;
 }
 
