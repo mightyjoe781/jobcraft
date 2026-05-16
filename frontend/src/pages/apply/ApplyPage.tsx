@@ -667,6 +667,18 @@ export default function ApplyPage() {
               >
                 Tailor Resume
               </button>
+
+              <div className="text-center pt-2">
+                <button
+                  onClick={() => navigate("/applications")}
+                  className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Skip tailoring — track this job without a variant
+                </button>
+                <p className="text-xs text-gray-600 mt-1">
+                  You can tailor from the Applications panel later
+                </p>
+              </div>
             </div>
           )}
         </div>
