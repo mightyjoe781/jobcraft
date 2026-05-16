@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { listApplications } from "../../api/applications";
+import { listApplications, updateApplication } from "../../api/applications";
 import type { Application, AppStatus } from "../../api/applications";
 import { getDashboardStats } from "../../api/dashboard";
 import type { DashboardStats } from "../../api/dashboard";
@@ -43,10 +43,23 @@ function StatCard({ label, value, sub, valueColor = "text-gray-900" }: {
   );
 }
 
-function JobCard({ app }: { app: Application }) {
+function JobCard({
+  app,
+  onDragStart,
+}: {
+  app: Application;
+  onDragStart: (id: string) => void;
+}) {
   return (
-    <Link to="/applications">
-      <div className="bg-white rounded-lg border border-gray-200 p-3 mb-2 hover:border-gray-300 cursor-pointer shadow-sm">
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        onDragStart(app.id);
+      }}
+      className="bg-white rounded-lg border border-gray-200 p-3 mb-2 hover:border-gray-300 shadow-sm cursor-grab active:cursor-grabbing active:opacity-60 active:scale-95 transition-all"
+    >
+      <Link to="/applications" onClick={(e) => e.stopPropagation()}>
         <p className="text-gray-900 text-sm font-medium truncate">{app.company}</p>
         <p className="text-gray-500 text-xs truncate">{app.role_title}</p>
         <div className="flex items-center gap-2 mt-2">
@@ -68,8 +81,8 @@ function JobCard({ app }: { app: Application }) {
             <span className="text-red-500 text-xs">⚠</span>
           )}
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
@@ -77,11 +90,16 @@ function PipelineColumn({
   status,
   label,
   apps,
+  onDragStart,
+  onDrop,
 }: {
   status: AppStatus;
   label: string;
   apps: Application[];
+  onDragStart: (id: string) => void;
+  onDrop: (status: AppStatus) => void;
 }) {
+  const [dragOver, setDragOver] = useState(false);
   const isHighlight = status === "interview" || status === "offer";
   const isMuted = status === "rejected";
 
@@ -90,6 +108,9 @@ function PipelineColumn({
       className={`w-52 shrink-0 ${isMuted ? "opacity-60" : ""} ${
         isHighlight ? "border-l-2 border-accent pl-2" : ""
       }`}
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => { e.preventDefault(); setDragOver(false); onDrop(status); }}
     >
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3">
@@ -100,13 +121,17 @@ function PipelineColumn({
       </div>
 
       {/* Cards */}
-      <div>
+      <div
+        className={`min-h-[4rem] rounded-lg transition-colors ${
+          dragOver ? "bg-indigo-50 ring-2 ring-indigo-200" : ""
+        }`}
+      >
         {apps.map((app) => (
-          <JobCard key={app.id} app={app} />
+          <JobCard key={app.id} app={app} onDragStart={onDragStart} />
         ))}
-        {apps.length === 0 && (
+        {apps.length === 0 && !dragOver && (
           <div className="border border-dashed border-gray-200 rounded-lg h-16 flex items-center justify-center">
-            <span className="text-gray-300 text-xs">Empty</span>
+            <span className="text-gray-300 text-xs">Drop here</span>
           </div>
         )}
       </div>
@@ -155,12 +180,37 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showClosed, setShowClosed] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const draggingId = useRef<string | null>(null);
 
   useEffect(() => {
     Promise.all([listApplications(), getDashboardStats()])
       .then(([apps, s]) => { setApplications(apps); setStats(s); })
       .finally(() => setLoading(false));
   }, []);
+
+  function handleDragStart(id: string) {
+    draggingId.current = id;
+  }
+
+  async function handleDrop(targetStatus: AppStatus) {
+    const id = draggingId.current;
+    draggingId.current = null;
+    if (!id) return;
+    const app = applications.find((a) => a.id === id);
+    if (!app || app.status === targetStatus) return;
+    // Optimistic update
+    setApplications((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: targetStatus } : a))
+    );
+    try {
+      await updateApplication(id, { status: targetStatus });
+    } catch {
+      // Revert on failure
+      setApplications((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, status: app.status } : a))
+      );
+    }
+  }
 
   // ── derived stats ──────────────────────────────────────────────────────────
 
@@ -287,6 +337,8 @@ export default function DashboardPage() {
             status={status}
             label={label}
             apps={grouped[status] ?? []}
+            onDragStart={handleDragStart}
+            onDrop={handleDrop}
           />
         ))}
       </div>

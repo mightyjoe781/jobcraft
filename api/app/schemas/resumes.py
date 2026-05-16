@@ -97,7 +97,7 @@ class RenderResponse(BaseModel):
 
 class VariantOut(BaseModel):
     id: uuid.UUID
-    base_resume_id: uuid.UUID
+    base_resume_id: uuid.UUID | None
     job_id: uuid.UUID | None
     modified_tex_path: str
     pdf_path: str | None

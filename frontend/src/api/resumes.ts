@@ -38,7 +38,7 @@ export interface SnapshotWithTex extends Snapshot {
 
 export interface Variant {
   id: string;
-  base_resume_id: string;
+  base_resume_id: string | null;
   job_id: string | null;
   modified_tex_path: string;
   pdf_path: string | null;
