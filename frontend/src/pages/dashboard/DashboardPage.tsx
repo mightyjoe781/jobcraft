@@ -496,12 +496,26 @@ export default function DashboardPage() {
               {stats.top_missing_keywords.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-8">Score variants to see keyword gaps</p>
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={stats.top_missing_keywords.slice(0, 8)} layout="vertical">
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#94a3b8" }} />
-                    <YAxis type="category" dataKey="term" width={72} tick={{ fontSize: 11, fill: "#475569" }} />
+                <ResponsiveContainer width="100%" height={Math.max(180, stats.top_missing_keywords.slice(0, 8).length * 32)}>
+                  <BarChart
+                    data={stats.top_missing_keywords.slice(0, 8).map((k) => ({
+                      ...k,
+                      label: k.term.length > 16 ? k.term.slice(0, 15) + "…" : k.term,
+                    }))}
+                    layout="vertical"
+                    margin={{ left: 4, right: 16, top: 0, bottom: 0 }}
+                  >
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#94a3b8" }} allowDecimals={false} />
+                    <YAxis
+                      type="category"
+                      dataKey="label"
+                      width={110}
+                      tick={{ fontSize: 11, fill: "#475569" }}
+                      interval={0}
+                    />
                     <Tooltip
                       contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
+                      labelFormatter={(_, payload) => payload?.[0]?.payload?.term ?? ""}
                       formatter={(v) => [`${v} JDs`, "Missing from"]}
                     />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
