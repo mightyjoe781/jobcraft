@@ -784,67 +784,79 @@ export default function ApplicationsPage() {
       {/* ── Left panel: job list ── */}
       <div className="w-72 shrink-0 border-r border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-200 shrink-0">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-900 font-semibold text-sm">
-              Applications
-              {filteredApps.length !== apps.length && (
-                <span className="ml-1.5 text-gray-400 font-normal text-xs">
-                  {filteredApps.length}/{apps.length}
-                </span>
-              )}
-            </span>
-            <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0 relative">
+          <span className="text-gray-900 font-semibold text-sm">
+            Applications
+            {filteredApps.length !== apps.length && (
+              <span className="ml-1.5 text-gray-400 font-normal text-xs">
+                {filteredApps.length}/{apps.length}
+              </span>
+            )}
+          </span>
+
+          <div className="flex items-center gap-2">
+            {/* Filter button + popover */}
+            <div className="relative">
               <button
                 onClick={() => setShowFilter((v) => !v)}
                 className={`text-xs px-2 py-1 rounded-lg border transition-colors ${
-                  showFilter || hiddenStatuses.size > 0
+                  hiddenStatuses.size > 0
                     ? "border-indigo-300 bg-indigo-50 text-indigo-600"
-                    : "border-gray-200 text-gray-400 hover:text-gray-700"
+                    : "border-gray-200 text-gray-500 hover:text-gray-900"
                 }`}
-                title="Filter by status"
               >
-                ⊟ Filter{hiddenStatuses.size > 0 ? ` (${hiddenStatuses.size} hidden)` : ""}
+                Filter {hiddenStatuses.size > 0 && `· ${STATUS_ORDER.length - hiddenStatuses.size} shown`}
               </button>
-              <Link
-                to="/apply"
-                className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
-              >
-                + Apply
-              </Link>
-            </div>
-          </div>
 
-          {/* Status multi-select filter */}
-          {showFilter && (
-            <div className="pt-2 pb-1">
-              <p className="text-gray-400 text-xs mb-2">Show statuses:</p>
-              <div className="flex flex-wrap gap-1.5">
-                {STATUS_ORDER.map((s) => {
-                  const hidden = hiddenStatuses.has(s);
-                  return (
-                    <button
-                      key={s}
-                      onClick={() => toggleStatus(s)}
-                      className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
-                        hidden
-                          ? "border-gray-200 text-gray-300 line-through"
-                          : `border-current ${STATUS_COLORS[s]}`
-                      }`}
-                    >
-                      {STATUS_LABELS[s]}
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                onClick={() => setHiddenStatuses(new Set(["rejected", "withdrawn"]))}
-                className="text-xs text-indigo-500 hover:underline mt-2 block"
-              >
-                Reset to default
-              </button>
+              {showFilter && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowFilter(false)}
+                  />
+                  {/* Popover */}
+                  <div className="absolute right-0 top-full mt-1.5 z-20 bg-white border border-gray-200 rounded-xl shadow-lg w-48 py-2">
+                    <div className="px-3 pb-1 flex items-center justify-between">
+                      <span className="text-gray-400 text-xs uppercase tracking-wide">Status</span>
+                      <button
+                        onClick={() => setHiddenStatuses(new Set(["rejected", "withdrawn"]))}
+                        className="text-xs text-indigo-500 hover:underline"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                    {STATUS_ORDER.map((s) => {
+                      const visible = !hiddenStatuses.has(s);
+                      return (
+                        <label
+                          key={s}
+                          className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={visible}
+                            onChange={() => toggleStatus(s)}
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5"
+                          />
+                          <span className={`text-sm ${visible ? "text-gray-700" : "text-gray-400"}`}>
+                            {STATUS_LABELS[s]}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
-          )}
+
+            <Link
+              to="/apply"
+              className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
+            >
+              + Apply
+            </Link>
+          </div>
         </div>
 
         {/* Job list */}
