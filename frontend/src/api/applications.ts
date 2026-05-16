@@ -25,6 +25,7 @@ export interface Application {
   job_id: string;
   company: string;
   role_title: string;
+  jd_text: string | null;
   jd_url: string | null;
   status: AppStatus;
   applied_at: string | null;

@@ -53,6 +53,7 @@ async def _enrich(app: Application, db: AsyncSession) -> ApplicationOut:
         job_id=app.job_id,
         company=job.company if job else "Unknown",
         role_title=job.role_title if job else "Unknown",
+        jd_text=job.jd_text if job else None,
         jd_url=job.jd_url if job else None,
         status=app.status,
         applied_at=app.applied_at,

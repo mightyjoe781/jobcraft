@@ -35,3 +35,7 @@ export const startTailoring = (body: {
   aggressiveness: string;
   custom_instruction?: string;
 }) => apiFetch<TailorResponse>("/tailor", { method: "POST", body: JSON.stringify(body) });
+
+
+export const updateJob = (id: string, data: { company?: string; role_title?: string; jd_text?: string; jd_url?: string }) =>
+  apiFetch<Job>(`/jobs/${id}`, { method: "PATCH", body: JSON.stringify(data) });

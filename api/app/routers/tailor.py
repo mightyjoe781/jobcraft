@@ -77,6 +77,37 @@ async def get_job(
     return job
 
 
+@router.patch("/jobs/{job_id}", response_model=JobOut)
+async def update_job(
+    job_id: uuid.UUID,
+    body: JobCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Job).where(Job.id == job_id, Job.user_id == current_user.id))
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if body.jd_text:
+        flag = check_jd(body.jd_text)
+        if flag:
+            raise HTTPException(status_code=400, detail={"code": "job_description_rejected"})
+
+    if body.company:
+        job.company = body.company
+    if body.role_title:
+        job.role_title = body.role_title
+    if body.jd_text is not None:
+        job.jd_text = body.jd_text
+    if body.jd_url is not None:
+        job.jd_url = body.jd_url
+
+    await db.commit()
+    await db.refresh(job)
+    return job
+
+
 @router.post("/jobs/fetch-jd", response_model=FetchJdResponse)
 async def fetch_jd(body: FetchJdRequest):
     """Fetch and parse a job description from a URL."""

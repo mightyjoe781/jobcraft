@@ -42,6 +42,7 @@ class ApplicationOut(BaseModel):
     job_id: uuid.UUID
     company: str
     role_title: str
+    jd_text: str | None
     jd_url: str | None
     status: str
     applied_at: datetime | None

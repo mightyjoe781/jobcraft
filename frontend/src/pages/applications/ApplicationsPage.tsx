@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import * as appApi from "../../api/applications";
 import type { Application, AppStatus } from "../../api/applications";
 import { STATUS_LABELS, STATUS_ORDER } from "../../api/applications";
+import { updateJob } from "../../api/tailor";
 
 const STATUS_COLORS: Record<AppStatus, string> = {
   saved:      "bg-gray-800 text-gray-400",
@@ -58,7 +59,9 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editNotes, setEditNotes] = useState<Record<string, string>>({});
+  const [editJd, setEditJd] = useState<Record<string, string>>({});
   const [savingNotes, setSavingNotes] = useState<string | null>(null);
+  const [savingJd, setSavingJd] = useState<string | null>(null);
   const navigate = useNavigate();
 
   async function load() {
@@ -99,12 +102,27 @@ export default function ApplicationsPage() {
     }
   }
 
-  function toggleExpand(id: string, notes: string | null) {
+  async function handleSaveJd(app: Application) {
+    setSavingJd(app.id);
+    try {
+      await updateJob(app.job_id, { jd_text: editJd[app.id] ?? "" });
+      setApps((prev) =>
+        prev.map((a) => a.id === app.id ? { ...a, jd_text: editJd[app.id] ?? "" } : a)
+      );
+    } catch {
+      alert("Failed to save job description");
+    } finally {
+      setSavingJd(null);
+    }
+  }
+
+  function toggleExpand(id: string, app: Application) {
     if (expandedId === id) {
       setExpandedId(null);
     } else {
       setExpandedId(id);
-      setEditNotes((prev) => ({ ...prev, [id]: notes ?? "" }));
+      setEditNotes((prev) => ({ ...prev, [id]: app.notes ?? "" }));
+      setEditJd((prev) => ({ ...prev, [id]: app.jd_text ?? "" }));
     }
   }
 
@@ -166,7 +184,7 @@ export default function ApplicationsPage() {
                 {/* Main row */}
                 <div
                   className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-800/40 transition-colors"
-                  onClick={() => toggleExpand(app.id, app.notes)}
+                  onClick={() => toggleExpand(app.id, app)}
                 >
                   {/* Company + role */}
                   <div className="flex-1 min-w-0">
@@ -250,6 +268,41 @@ export default function ApplicationsPage() {
                           {STATUS_LABELS[s]}
                         </button>
                       ))}
+                    </div>
+
+                    {/* Job Description */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs text-gray-500">Job Description</label>
+                        {app.jd_url && (
+                          <a
+                            href={app.jd_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-accent hover:underline"
+                          >
+                            View original ↗
+                          </a>
+                        )}
+                      </div>
+                      <textarea
+                        value={editJd[app.id] ?? ""}
+                        onChange={(e) =>
+                          setEditJd((prev) => ({ ...prev, [app.id]: e.target.value }))
+                        }
+                        rows={5}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs resize-y focus:outline-none focus:ring-2 focus:ring-accent"
+                        placeholder="Paste the full job description here — used for ATS scoring and skill gap analysis…"
+                      />
+                      <div className="flex justify-end mt-1.5">
+                        <button
+                          onClick={() => void handleSaveJd(app)}
+                          disabled={savingJd === app.id}
+                          className="text-xs bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg px-3 py-1 transition-colors"
+                        >
+                          {savingJd === app.id ? "Saving…" : "Save JD"}
+                        </button>
+                      </div>
                     </div>
 
                     {/* Notes */}
