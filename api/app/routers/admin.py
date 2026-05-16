@@ -203,3 +203,123 @@ async def get_user_stats(
         "ai_tailor_runs_total": ai_calls_total,
         "estimated_cost_usd": round(ai_calls_total * 0.04, 2),
     }
+
+@router.get("/stats")
+async def get_platform_stats(
+    _: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Platform-wide aggregate statistics for the admin dashboard."""
+    from sqlalchemy import func, and_
+    from datetime import timedelta
+    from app.models.resume import BaseResume, ResumeVariant
+    from app.models.job import Job
+    from app.models.application import Application
+    from app.models.ats import AtsScore
+    from app.models.cover_letter import CoverLetter
+    from app.models.skill_gap import SkillGap
+    from app.models.activity import ActivityLog
+
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    week_ago = now - timedelta(days=7)
+
+    async def count(model, *filters):
+        r = await db.execute(select(func.count()).where(*filters))
+        return r.scalar_one()
+
+    # ── Users ──────────────────────────────────────────────────────────────────
+    total_users    = await count(User)
+    disabled_users = await count(User, User.is_disabled == True)  # noqa
+    new_this_week  = await count(User, User.created_at >= week_ago)
+
+    # ── Content ────────────────────────────────────────────────────────────────
+    base_resumes = await count(BaseResume)
+    variants     = await count(ResumeVariant)
+    jobs_total   = await count(Job)
+    applications = await count(Application)
+    ats_scores   = await count(AtsScore, AtsScore.status == "complete")
+    cover_letters = await count(CoverLetter)
+    skill_gaps   = await count(SkillGap)
+
+    # ── AI usage ───────────────────────────────────────────────────────────────
+    tailor_total = await count(ActivityLog, ActivityLog.action == "tailored")
+    tailor_month = await count(
+        ActivityLog, ActivityLog.action == "tailored",
+        ActivityLog.created_at >= month_start,
+    )
+
+    # ── Growth — user signups per week for last 8 weeks ───────────────────────
+    eight_weeks_ago = now - timedelta(weeks=8)
+    growth_result = await db.execute(
+        select(
+            func.date_trunc("week", User.created_at).label("week"),
+            func.count().label("users"),
+        )
+        .where(User.created_at >= eight_weeks_ago)
+        .group_by(func.date_trunc("week", User.created_at))
+        .order_by(func.date_trunc("week", User.created_at))
+    )
+    growth = [
+        {
+            "week": row.week.strftime("%b %d"),
+            "users": row.users,
+        }
+        for row in growth_result.all()
+    ]
+
+    # ── Daily AI activity — tailor runs + ATS scores per day, last 7 days ─────
+    daily_tailor = await db.execute(
+        select(
+            func.date_trunc("day", ActivityLog.created_at).label("day"),
+            func.count().label("count"),
+        )
+        .where(ActivityLog.action == "tailored", ActivityLog.created_at >= week_ago)
+        .group_by(func.date_trunc("day", ActivityLog.created_at))
+        .order_by(func.date_trunc("day", ActivityLog.created_at))
+    )
+    daily_ats = await db.execute(
+        select(
+            func.date_trunc("day", AtsScore.created_at).label("day"),
+            func.count().label("count"),
+        )
+        .where(AtsScore.status == "complete", AtsScore.created_at >= week_ago)
+        .group_by(func.date_trunc("day", AtsScore.created_at))
+        .order_by(func.date_trunc("day", AtsScore.created_at))
+    )
+
+    tailor_by_day = {row.day: row.count for row in daily_tailor.all()}
+    ats_by_day    = {row.day: row.count for row in daily_ats.all()}
+    all_days = sorted(set(tailor_by_day) | set(ats_by_day))
+    daily_activity = [
+        {
+            "date": d.strftime("%b %d"),
+            "tailor_runs": tailor_by_day.get(d, 0),
+            "ats_scores":  ats_by_day.get(d, 0),
+        }
+        for d in all_days
+    ]
+
+    return {
+        "users": {
+            "total": total_users,
+            "active": total_users - disabled_users,
+            "disabled": disabled_users,
+            "new_this_week": new_this_week,
+        },
+        "resumes": {"base_resumes": base_resumes, "variants": variants},
+        "jobs": {"total_tracked": jobs_total, "applications": applications},
+        "ai": {
+            "tailor_runs_total": tailor_total,
+            "tailor_runs_this_month": tailor_month,
+            "estimated_cost_total_usd": round(tailor_total * 0.04, 2),
+            "estimated_cost_this_month_usd": round(tailor_month * 0.04, 2),
+        },
+        "content": {
+            "ats_scores": ats_scores,
+            "cover_letters": cover_letters,
+            "skill_gaps": skill_gaps,
+        },
+        "growth": growth,
+        "daily_activity": daily_activity,
+    }

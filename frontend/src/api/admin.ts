@@ -40,3 +40,20 @@ export const enableUser = (id: string) =>
 
 export const deleteUser = (id: string) =>
   apiFetch<void>(`/admin/users/${id}`, { method: "DELETE" });
+
+export interface AdminStats {
+  users: { total: number; active: number; disabled: number; new_this_week: number };
+  resumes: { base_resumes: number; variants: number };
+  jobs: { total_tracked: number; applications: number };
+  ai: {
+    tailor_runs_total: number;
+    tailor_runs_this_month: number;
+    estimated_cost_total_usd: number;
+    estimated_cost_this_month_usd: number;
+  };
+  content: { ats_scores: number; cover_letters: number; skill_gaps: number };
+  growth: { week: string; users: number }[];
+  daily_activity: { date: string; tailor_runs: number; ats_scores: number }[];
+}
+
+export const getAdminStats = () => apiFetch<AdminStats>("/admin/stats");
