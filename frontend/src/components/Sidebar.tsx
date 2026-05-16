@@ -42,12 +42,12 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-60 min-h-screen bg-sidebar flex flex-col border-r border-gray-200">
-      <div className="px-5 py-5 border-b border-gray-200">
+    <aside className="w-60 h-screen sticky top-0 bg-sidebar flex flex-col border-r border-gray-200">
+      <div className="px-5 py-5 border-b border-gray-200 shrink-0">
         <span className="text-gray-900 font-bold text-lg tracking-tight">JobCraft</span>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-0.5">
         {NAV_ITEMS.map((item) =>
           item.locked ? (
             <div key={item.to} className="relative group">
@@ -92,7 +92,7 @@ export default function Sidebar() {
         )}
       </nav>
 
-      <div className="px-3 py-4 border-t border-gray-200 space-y-1">
+      <div className="px-3 py-4 border-t border-gray-200 space-y-1 shrink-0">
         <NavLink
           to="/profile"
           className={({ isActive }) =>

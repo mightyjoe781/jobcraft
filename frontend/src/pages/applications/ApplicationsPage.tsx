@@ -63,10 +63,7 @@ function JobListItem({
         <span className={`text-xs px-1.5 py-0.5 rounded ${STATUS_COLORS[app.status]}`}>
           {STATUS_LABELS[app.status]}
         </span>
-        <div className="flex items-center gap-2">
-          <AtsScoreBadge score={app.ats_score} />
-          <span className="text-gray-400 text-xs">{daysOpen}d</span>
-        </div>
+        <span className="text-gray-400 text-xs">{daysOpen}d</span>
       </div>
     </button>
   );
