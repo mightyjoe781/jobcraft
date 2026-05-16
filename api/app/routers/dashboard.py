@@ -19,6 +19,34 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 FUNNEL_STAGES = ["applied", "oa_screen", "interview", "offer"]
 BREAKDOWN_KEYS = ["keyword_match", "semantic_relevance", "formatting", "action_verbs", "quantification", "seniority_match"]
 
+# Common tech skills/tools to track frequency in JD text
+TECH_KEYWORDS = [
+    "python","golang","go","java","javascript","typescript","rust","scala","kotlin","c++","ruby","swift",
+    "sql","postgresql","mysql","mongodb","redis","elasticsearch","cassandra","dynamodb","sqlite",
+    "kubernetes","docker","terraform","ansible","helm","aws","gcp","azure","lambda","ec2","s3",
+    "kafka","rabbitmq","grpc","graphql","rest","microservices","api","fastapi","django","flask","spring",
+    "react","vue","angular","node","nextjs","tailwind",
+    "machine learning","deep learning","pytorch","tensorflow","scikit","pandas","numpy","spark","airflow","dbt",
+    "ci/cd","github actions","jenkins","linux","bash","git",
+    "distributed systems","system design","observability","monitoring","prometheus","grafana","datadog",
+    "slo","sla","reliability","scalability","performance","security","oauth","jwt","saml",
+]
+
+def _extract_demanded_skills(jd_texts: list[str]) -> list[dict]:
+    """Count frequency of known tech terms across all JD texts."""
+    import re
+    freq: dict[str, int] = {}
+    for text in jd_texts:
+        lower = text.lower()
+        for kw in TECH_KEYWORDS:
+            # word-boundary match
+            if re.search(r'\b' + re.escape(kw) + r'\b', lower):
+                freq[kw] = freq.get(kw, 0) + 1
+    return sorted(
+        [{"skill": k, "count": v, "pct": round(v / len(jd_texts) * 100)} for k, v in freq.items()],
+        key=lambda x: x["count"], reverse=True
+    )[:12]
+
 
 @router.get("/stats")
 async def get_stats(
@@ -164,28 +192,60 @@ async def get_stats(
     total_tailor_runs = len(ai_logs)
     estimated_cost = round(total_tailor_runs * 0.04, 2)
 
-    # ── Recent activity ───────────────────────────────────────────────────────
+    # ── Most demanded skills from all JDs ────────────────────────────────────
+    jd_result = await db.execute(
+        select(Job.jd_text).where(Job.user_id == uid, Job.jd_text.isnot(None))
+    )
+    jd_texts = [r for r, in jd_result.all() if r and len(r.strip()) > 50]
+    most_demanded_skills = _extract_demanded_skills(jd_texts) if jd_texts else []
+
+    # ── Recent activity — enriched with company context ───────────────────────
     activity_result = await db.execute(
         select(ActivityLog)
         .where(ActivityLog.user_id == uid)
         .order_by(ActivityLog.created_at.desc())
-        .limit(8)
+        .limit(10)
     )
-    recent_activity = [
-        {
+    activity_rows = activity_result.scalars().all()
+
+    # Deduplicate: skip consecutive identical (action, entity_id) entries
+    seen: set[tuple] = set()
+    recent_activity = []
+    for row in activity_rows:
+        key = (row.action, str(row.entity_id))
+        if key in seen:
+            continue
+        seen.add(key)
+        # Try to get company name from variant → job
+        label = None
+        if row.entity_type == "resume_variant":
+            try:
+                vr = await db.execute(
+                    select(ResumeVariant.job_id).where(ResumeVariant.id == row.entity_id)
+                )
+                vrow = vr.first()
+                if vrow and vrow[0]:
+                    jr = await db.execute(
+                        select(Job.company, Job.role_title).where(Job.id == vrow[0])
+                    )
+                    jrow = jr.first()
+                    if jrow:
+                        label = f"{jrow[0]} — {jrow[1]}"
+            except Exception:
+                pass
+        recent_activity.append({
             "action": row.action,
             "entity_type": row.entity_type,
+            "label": label,
             "created_at": row.created_at.isoformat(),
-            "metadata": row.metadata_json,
-        }
-        for row in activity_result.scalars().all()
-    ]
+        })
 
     return {
         # Score analytics
         "score_trend": score_trend,
         "breakdown_avg": breakdown_avg,
         "top_missing_keywords": top_missing_keywords,
+        "most_demanded_skills": most_demanded_skills,
         "total_scores": len(score_rows),
         # Application analytics
         "funnel": funnel,

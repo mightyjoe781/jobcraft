@@ -5,6 +5,7 @@ export interface DashboardStats {
   score_trend: { score: number; company: string; date: string }[];
   breakdown_avg: Record<string, number>;
   top_missing_keywords: { term: string; count: number }[];
+  most_demanded_skills: { skill: string; count: number; pct: number }[];
   total_scores: number;
   // Application analytics
   funnel: { stage: string; count: number }[];
@@ -27,8 +28,8 @@ export interface DashboardStats {
   recent_activity: {
     action: string;
     entity_type: string;
+    label: string | null;
     created_at: string;
-    metadata: Record<string, unknown> | null;
   }[];
   // Legacy
   avg_ats_score: number | null;

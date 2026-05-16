@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell,
+  Tooltip, ResponsiveContainer,
 } from "recharts";
 import { listApplications, updateApplication } from "../../api/applications";
 import type { Application, AppStatus } from "../../api/applications";
@@ -457,90 +456,86 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Row 3: ATS breakdown radar + top missing keywords */}
+          {/* Row 3: Most demanded skills + ATS score breakdown bars */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-            {/* ATS breakdown radar */}
+            {/* Most demanded skills from JDs */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <p className="text-gray-700 text-sm font-semibold mb-1">ATS Weakness Radar</p>
-              <p className="text-gray-400 text-xs mb-2">Average scores across 6 dimensions — identify your blind spots</p>
-              {stats.total_scores === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-8">Score a variant to see breakdown</p>
+              <p className="text-gray-700 text-sm font-semibold mb-1">Most Demanded Skills</p>
+              <p className="text-gray-400 text-xs mb-4">Skills appearing most often across all your job descriptions</p>
+              {stats.most_demanded_skills.length === 0 ? (
+                <p className="text-gray-400 text-sm text-center py-8">Add JDs to jobs in Applications to see skill demand</p>
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <RadarChart data={[
-                    { dim: "Keywords", score: stats.breakdown_avg.keyword_match ?? 0 },
-                    { dim: "Relevance", score: stats.breakdown_avg.semantic_relevance ?? 0 },
-                    { dim: "Formatting", score: stats.breakdown_avg.formatting ?? 0 },
-                    { dim: "Verbs", score: stats.breakdown_avg.action_verbs ?? 0 },
-                    { dim: "Metrics", score: stats.breakdown_avg.quantification ?? 0 },
-                    { dim: "Seniority", score: stats.breakdown_avg.seniority_match ?? 0 },
-                  ]}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="dim" tick={{ fontSize: 11, fill: "#64748b" }} />
-                    <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "#94a3b8" }} tickCount={4} />
-                    <Radar dataKey="score" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} />
-                    <Tooltip
-                      contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
-                      formatter={(v) => [`${v}/100`, ""]}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+                <div className="space-y-2">
+                  {stats.most_demanded_skills.slice(0, 10).map((s, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="text-gray-600 text-xs w-28 shrink-0 truncate capitalize">{s.skill}</span>
+                      <div className="flex-1 bg-gray-100 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${s.pct >= 70 ? "bg-indigo-500" : s.pct >= 40 ? "bg-indigo-400" : "bg-indigo-300"}`}
+                          style={{ width: `${s.pct}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-400 w-12 text-right shrink-0">{s.pct}% of JDs</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Top missing keywords */}
+            {/* ATS score dimensions — compact horizontal bars */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <p className="text-gray-700 text-sm font-semibold mb-1">Top Missing Keywords</p>
-              <p className="text-gray-400 text-xs mb-4">Skills that keep appearing in JDs but not in your resumes</p>
-              {stats.top_missing_keywords.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-8">Score variants to see keyword gaps</p>
+              <p className="text-gray-700 text-sm font-semibold mb-1">ATS Score Breakdown</p>
+              <p className="text-gray-400 text-xs mb-4">Average across all scored variants — your weakest dimensions</p>
+              {stats.total_scores === 0 ? (
+                <p className="text-gray-400 text-sm text-center py-8">Score a variant to see breakdown</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(180, stats.top_missing_keywords.slice(0, 8).length * 32)}>
-                  <BarChart
-                    data={stats.top_missing_keywords.slice(0, 8).map((k) => ({
-                      ...k,
-                      label: k.term.length > 16 ? k.term.slice(0, 15) + "…" : k.term,
-                    }))}
-                    layout="vertical"
-                    margin={{ left: 4, right: 16, top: 0, bottom: 0 }}
-                  >
-                    <XAxis type="number" tick={{ fontSize: 10, fill: "#94a3b8" }} allowDecimals={false} />
-                    <YAxis
-                      type="category"
-                      dataKey="label"
-                      width={110}
-                      tick={{ fontSize: 11, fill: "#475569" }}
-                      interval={0}
-                    />
-                    <Tooltip
-                      contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
-                      labelFormatter={(_, payload) => payload?.[0]?.payload?.term ?? ""}
-                      formatter={(v) => [`${v} JDs`, "Missing from"]}
-                    />
-                    <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                      {stats.top_missing_keywords.slice(0, 8).map((_, i) => (
-                        <Cell key={i} fill={i < 3 ? "#ef4444" : i < 6 ? "#f59e0b" : "#6366f1"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="space-y-3">
+                  {[
+                    { label: "Keywords", key: "keyword_match" },
+                    { label: "Relevance", key: "semantic_relevance" },
+                    { label: "Formatting", key: "formatting" },
+                    { label: "Action Verbs", key: "action_verbs" },
+                    { label: "Quantification", key: "quantification" },
+                    { label: "Seniority", key: "seniority_match" },
+                  ].sort((a, b) => (stats.breakdown_avg[a.key] ?? 0) - (stats.breakdown_avg[b.key] ?? 0))
+                   .map(({ label, key }) => {
+                    const v = stats.breakdown_avg[key] ?? 0;
+                    const color = v >= 70 ? "bg-green-500" : v >= 50 ? "bg-yellow-500" : "bg-red-500";
+                    return (
+                      <div key={key} className="flex items-center gap-3">
+                        <span className="text-gray-600 text-xs w-24 shrink-0">{label}</span>
+                        <div className="flex-1 bg-gray-100 rounded-full h-2">
+                          <div className={`${color} h-2 rounded-full`} style={{ width: `${v}%` }} />
+                        </div>
+                        <span className={`text-xs font-medium w-8 text-right shrink-0 ${v >= 70 ? "text-green-600" : v >= 50 ? "text-yellow-600" : "text-red-600"}`}>{v}</span>
+                      </div>
+                    );
+                  })}
+                  <p className="text-gray-300 text-xs text-right">Sorted weakest first</p>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Row 4: weekly velocity + skill gap donut + activity */}
+          {/* Row 4: velocity + skill readiness + activity */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-            {/* Weekly velocity */}
+            {/* Application velocity — big number if ≤1 week, chart otherwise */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
               <p className="text-gray-700 text-sm font-semibold mb-1">Application Velocity</p>
-              <p className="text-gray-400 text-xs mb-4">Jobs tracked per week (last 8 weeks)</p>
+              <p className="text-gray-400 text-xs mb-4">Jobs added per week</p>
               {stats.weekly_velocity.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-6">No data yet</p>
+              ) : stats.weekly_velocity.length === 1 ? (
+                <div className="flex flex-col items-center justify-center py-4 gap-1">
+                  <span className="text-4xl font-bold text-indigo-600">{stats.weekly_velocity[0].count}</span>
+                  <span className="text-gray-500 text-sm">jobs this week</span>
+                  <span className="text-gray-300 text-xs mt-1">Check back next week to see trends</span>
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height={120}>
-                  <BarChart data={stats.weekly_velocity}>
+                  <BarChart data={stats.weekly_velocity} barSize={20}>
                     <XAxis dataKey="week" tick={{ fontSize: 9, fill: "#94a3b8" }} />
                     <YAxis tick={{ fontSize: 9, fill: "#94a3b8" }} width={20} allowDecimals={false} />
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }} />
@@ -550,18 +545,21 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Skill gap progress */}
+            {/* Skill readiness */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <p className="text-gray-700 text-sm font-semibold mb-1">Skill Gap Progress</p>
-              <p className="text-gray-400 text-xs mb-4">How many gaps you've closed</p>
+              <p className="text-gray-700 text-sm font-semibold mb-1">Skill Readiness</p>
+              <p className="text-gray-400 text-xs mb-3">Track gaps identified via Skill Gaps analysis</p>
               {stats.skill_gap_summary.total === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-6">Run a skill gap analysis to start tracking</p>
+                <div className="text-center py-4">
+                  <p className="text-gray-400 text-sm mb-2">No gaps tracked yet</p>
+                  <p className="text-gray-300 text-xs">Go to an application → Skill Gaps tab → Analyze</p>
+                </div>
               ) : (
-                <div className="space-y-3 mt-2">
+                <div className="space-y-2.5">
                   {[
-                    { label: "Acquired", key: "acquired", color: "bg-green-500", textColor: "text-green-600" },
-                    { label: "Learning", key: "learning", color: "bg-blue-500", textColor: "text-blue-600" },
-                    { label: "Identified", key: "identified", color: "bg-gray-300", textColor: "text-gray-500" },
+                    { label: "Acquired ✓", key: "acquired", color: "bg-green-500", textColor: "text-green-600" },
+                    { label: "Learning", key: "learning", color: "bg-blue-400", textColor: "text-blue-600" },
+                    { label: "To address", key: "identified", color: "bg-amber-400", textColor: "text-amber-600" },
                     { label: "Skipping", key: "not_pursuing", color: "bg-gray-200", textColor: "text-gray-400" },
                   ].map(({ label, key, color, textColor }) => {
                     const count = stats.skill_gap_summary[key as keyof typeof stats.skill_gap_summary] as number;
@@ -570,36 +568,47 @@ export default function DashboardPage() {
                       <div key={key}>
                         <div className="flex justify-between mb-1">
                           <span className="text-xs text-gray-600">{label}</span>
-                          <span className={`text-xs font-semibold ${textColor}`}>{count} ({pct}%)</span>
+                          <span className={`text-xs font-semibold ${textColor}`}>{count}</span>
                         </div>
-                        <div className="bg-gray-100 rounded-full h-2">
-                          <div className={`${color} h-2 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                        <div className="bg-gray-100 rounded-full h-1.5">
+                          <div className={`${color} h-1.5 rounded-full`} style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
                   })}
+                  <p className="text-gray-300 text-xs text-right pt-1">{stats.skill_gap_summary.total} total gaps tracked</p>
                 </div>
               )}
             </div>
 
-            {/* Recent activity */}
+            {/* Recent activity — enriched */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
               <p className="text-gray-700 text-sm font-semibold mb-4">Recent Activity</p>
               {stats.recent_activity.length === 0 ? (
                 <p className="text-gray-400 text-sm text-center py-6">No activity yet</p>
               ) : (
                 <div className="space-y-3">
-                  {stats.recent_activity.map((item, i) => (
-                    <div key={i} className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />
-                      <div>
-                        <p className="text-gray-800 text-xs capitalize">{item.action.replace(/_/g, " ")}</p>
-                        <p className="text-gray-400 text-xs">
-                          {new Date(item.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                        </p>
+                  {stats.recent_activity.map((item, i) => {
+                    const ACTION_ICONS: Record<string, string> = {
+                      tailored: "✦", ai_call: "◆", security_block: "⚠", tailoring: "↻",
+                    };
+                    const icon = ACTION_ICONS[item.action] ?? "·";
+                    const actionLabel = item.action === "tailored" ? "Tailored" : item.action.replace(/_/g, " ");
+                    return (
+                      <div key={i} className="flex items-start gap-2.5">
+                        <span className="text-indigo-400 text-xs shrink-0 mt-0.5">{icon}</span>
+                        <div className="min-w-0">
+                          <p className="text-gray-800 text-xs font-medium">
+                            {actionLabel}
+                            {item.label && <span className="text-gray-500 font-normal"> · {item.label}</span>}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {new Date(item.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
