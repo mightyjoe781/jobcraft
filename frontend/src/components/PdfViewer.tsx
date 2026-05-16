@@ -33,8 +33,13 @@ export function PdfViewer({ apiPath, className = "w-full h-full", title = "PDF" 
 
   if (!objectUrl) return null;
 
-  // #toolbar=0&navpanes=0 suppresses the browser PDF viewer's sidebar and toolbar
-  return <iframe src={`${objectUrl}#toolbar=0&navpanes=0`} className={className} title={title} />;
+  // toolbar=0 + navpanes=0 → Chrome/Edge hide toolbar + sidebar
+  // pagemode=none          → Firefox PDF.js: don't open sidebar on load
+  // scrollbar=0            → Chrome: hide scrollbar chrome
+  const src = `${objectUrl}#toolbar=0&navpanes=0&scrollbar=0&pagemode=none`;
+
+  // <embed> shows less browser chrome than <iframe> across engines
+  return <embed src={src} type="application/pdf" className={className} title={title} />;
 }
 
 /**
