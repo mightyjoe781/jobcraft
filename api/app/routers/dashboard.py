@@ -7,12 +7,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.activity import ActivityLog
+from app.models.application import Application
 from app.models.ats import AtsScore
+from app.models.job import Job
 from app.models.resume import ResumeVariant
 from app.models.skill_gap import SkillGap
 from app.models.user import User
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
+
+FUNNEL_STAGES = ["applied", "oa_screen", "interview", "offer"]
+BREAKDOWN_KEYS = ["keyword_match", "semantic_relevance", "formatting", "action_verbs", "quantification", "seniority_match"]
 
 
 @router.get("/stats")
@@ -23,25 +28,53 @@ async def get_stats(
     uid = current_user.id
     now = datetime.now(timezone.utc)
 
-    # ── ATS scores ────────────────────────────────────────────────────────────
+    # ── ATS scores (complete only) ─────────────────────────────────────────────
     scores_result = await db.execute(
-        select(AtsScore.overall_score, AtsScore.suggestions_json, AtsScore.created_at)
+        select(
+            AtsScore.overall_score,
+            AtsScore.breakdown_json,
+            AtsScore.suggestions_json,
+            AtsScore.created_at,
+            AtsScore.job_id,
+        )
         .where(AtsScore.user_id == uid, AtsScore.status == "complete")
-        .order_by(AtsScore.created_at.desc())
-        .limit(50)
+        .order_by(AtsScore.created_at.asc())
     )
     score_rows = scores_result.all()
-    score_values = [r.overall_score for r in score_rows if r.overall_score is not None]
-    avg_ats_score = round(sum(score_values) / len(score_values)) if score_values else None
 
-    # ATS score history for sparkline (last 10, oldest first)
-    ats_history = [
-        {"score": r.overall_score, "date": r.created_at.isoformat()}
-        for r in reversed(score_rows[:10])
-        if r.overall_score is not None
-    ]
+    # Score trend — all scores ordered oldest→newest with company label
+    score_trend = []
+    job_cache: dict = {}
+    for row in score_rows:
+        if row.overall_score is None:
+            continue
+        label = "—"
+        if row.job_id:
+            if row.job_id not in job_cache:
+                j = await db.get(Job, row.job_id)
+                job_cache[row.job_id] = j.company if j else "?"
+            label = job_cache[row.job_id]
+        score_trend.append({
+            "score": row.overall_score,
+            "company": label,
+            "date": row.created_at.strftime("%b %d"),
+        })
 
-    # Top missing keywords across all scores
+    # ATS breakdown averages across all scored variants
+    breakdown_sums: dict[str, list[int]] = {k: [] for k in BREAKDOWN_KEYS}
+    for row in score_rows:
+        if not row.breakdown_json:
+            continue
+        for k in BREAKDOWN_KEYS:
+            v = row.breakdown_json.get(k)
+            if v is not None:
+                breakdown_sums[k].append(int(v))
+    breakdown_avg = {
+        k: round(sum(vals) / len(vals)) if vals else 0
+        for k, vals in breakdown_sums.items()
+    }
+
+    # Missing keywords frequency
     keyword_freq: dict[str, int] = {}
     for row in score_rows:
         if not row.suggestions_json:
@@ -56,6 +89,46 @@ async def get_stats(
         reverse=True,
     )[:10]
 
+    # ── Applications ──────────────────────────────────────────────────────────
+    apps_result = await db.execute(
+        select(Application.status, Application.created_at)
+        .where(Application.user_id == uid)
+        .order_by(Application.created_at.asc())
+    )
+    all_apps = apps_result.all()
+
+    # Application funnel (conversion through stages)
+    status_counts = {}
+    for row in all_apps:
+        status_counts[row.status] = status_counts.get(row.status, 0) + 1
+
+    funnel = []
+    for stage in FUNNEL_STAGES:
+        count = status_counts.get(stage, 0)
+        funnel.append({"stage": stage, "count": count})
+
+    # Response rate: of jobs "applied", how many reached oa_screen+
+    applied_count = status_counts.get("applied", 0)
+    responded = sum(status_counts.get(s, 0) for s in ["oa_screen", "interview", "offer"])
+    response_rate = round(responded / (applied_count + responded) * 100) if (applied_count + responded) > 0 else None
+
+    # Weekly application velocity — last 8 weeks
+    weekly: dict[str, int] = {}
+    eight_weeks_ago = now - timedelta(weeks=8)
+    for row in all_apps:
+        created = row.created_at
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        if created < eight_weeks_ago:
+            continue
+        week_label = created.strftime("%b %d")
+        # Group by week start (Monday)
+        days_since_monday = created.weekday()
+        week_start = (created - timedelta(days=days_since_monday)).strftime("%b %d")
+        weekly[week_start] = weekly.get(week_start, 0) + 1
+
+    weekly_velocity = [{"week": k, "count": v} for k, v in sorted(weekly.items())]
+
     # ── Variants ──────────────────────────────────────────────────────────────
     variant_count_result = await db.execute(
         select(func.count()).where(ResumeVariant.user_id == uid)
@@ -64,9 +137,11 @@ async def get_stats(
 
     # ── Skill gaps ────────────────────────────────────────────────────────────
     gaps_result = await db.execute(
-        select(SkillGap.status).where(SkillGap.user_id == uid)
+        select(SkillGap.status, SkillGap.category)
+        .where(SkillGap.user_id == uid)
     )
-    gap_statuses = gaps_result.scalars().all()
+    gap_rows = gaps_result.all()
+    gap_statuses = [r.status for r in gap_rows]
     skill_gap_summary = {
         "total": len(gap_statuses),
         "identified": gap_statuses.count("identified"),
@@ -75,7 +150,7 @@ async def get_stats(
         "not_pursuing": gap_statuses.count("not_pursuing"),
     }
 
-    # ── AI usage (from activity_log) ──────────────────────────────────────────
+    # ── AI usage ──────────────────────────────────────────────────────────────
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     ai_result = await db.execute(
         select(ActivityLog.metadata_json)
@@ -87,7 +162,6 @@ async def get_stats(
     )
     ai_logs = ai_result.scalars().all()
     total_tailor_runs = len(ai_logs)
-    # Rough cost estimate: ~2000 tokens avg per tailor @ $3/M input + $15/M output
     estimated_cost = round(total_tailor_runs * 0.04, 2)
 
     # ── Recent activity ───────────────────────────────────────────────────────
@@ -95,7 +169,7 @@ async def get_stats(
         select(ActivityLog)
         .where(ActivityLog.user_id == uid)
         .order_by(ActivityLog.created_at.desc())
-        .limit(10)
+        .limit(8)
     )
     recent_activity = [
         {
@@ -108,10 +182,17 @@ async def get_stats(
     ]
 
     return {
-        "avg_ats_score": avg_ats_score,
-        "total_scores": len(score_values),
-        "ats_history": ats_history,
+        # Score analytics
+        "score_trend": score_trend,
+        "breakdown_avg": breakdown_avg,
         "top_missing_keywords": top_missing_keywords,
+        "total_scores": len(score_rows),
+        # Application analytics
+        "funnel": funnel,
+        "response_rate": response_rate,
+        "weekly_velocity": weekly_velocity,
+        "applications_by_status": status_counts,
+        # Counts
         "total_variants": total_variants,
         "skill_gap_summary": skill_gap_summary,
         "ai_usage": {
@@ -119,7 +200,8 @@ async def get_stats(
             "estimated_cost_usd": estimated_cost,
         },
         "recent_activity": recent_activity,
-        # Tracker-dependent — empty until Module 5 is built
-        "applications_by_status": {},
+        # Legacy / compat
+        "avg_ats_score": round(sum(r.overall_score for r in score_rows if r.overall_score) / len(score_rows)) if score_rows else None,
+        "ats_history": score_trend[-10:],
         "upcoming_followups": [],
     }
