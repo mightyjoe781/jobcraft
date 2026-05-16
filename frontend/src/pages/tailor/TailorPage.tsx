@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as tailorApi from "../../api/tailor";
 import * as resumeApi from "../../api/resumes";
+import { PdfViewer, PdfDownloadLink } from "../../components/PdfViewer";
 import type { BaseResume } from "../../api/resumes";
 
 const AGGRESSIVENESS = [
@@ -134,13 +135,13 @@ export default function TailorPage() {
             ))}
           </div>
           <div className="mt-auto space-y-2">
-            <a
-              href={resumeApi.variantPdfUrl(variantId)}
-              download
+            <PdfDownloadLink
+              apiPath={resumeApi.variantPdfUrl(variantId)}
+              filename="tailored-resume.pdf"
               className="block w-full bg-accent hover:bg-accent-hover text-white text-sm rounded-lg py-2.5 text-center transition-colors"
             >
               Download PDF
-            </a>
+            </PdfDownloadLink>
             <button
               onClick={() => navigate(`/ats?variant=${variantId}`)}
               className="block w-full bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg py-2.5 text-center transition-colors"
@@ -161,8 +162,8 @@ export default function TailorPage() {
             </button>
           </div>
         </div>
-        <iframe
-          src={`${resumeApi.variantPdfUrl(variantId)}?t=${Date.now()}`}
+        <PdfViewer
+          apiPath={resumeApi.variantPdfUrl(variantId)}
           className="flex-1"
           title="Tailored resume"
         />

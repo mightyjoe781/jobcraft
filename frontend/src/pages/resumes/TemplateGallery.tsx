@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as resumeApi from "../../api/resumes";
+import { PdfViewer } from "../../components/PdfViewer";
 
 const CATEGORIES = ["all", "engineering", "data", "research", "general"] as const;
 
@@ -108,8 +109,8 @@ export default function TemplateGallery() {
               </button>
             </div>
             <div className="flex-1 overflow-hidden rounded-b-xl">
-              <iframe
-                src={resumeApi.templatePdfUrl(preview.id)}
+              <PdfViewer
+                apiPath={resumeApi.templatePdfUrl(preview.id)}
                 className="w-full h-full min-h-[70vh]"
                 title={`Preview of ${preview.name}`}
               />

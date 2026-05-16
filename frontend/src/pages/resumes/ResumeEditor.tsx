@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import * as resumeApi from "../../api/resumes";
 import type { Snapshot } from "../../api/resumes";
+import { PdfViewer } from "../../components/PdfViewer";
 
 type SaveStatus = "saved" | "saving" | "unsaved" | "error";
 
@@ -21,7 +22,7 @@ export default function ResumeEditor() {
   const [label, setLabel] = useState("");
   const [resumeId, setResumeId] = useState<string | null>(id ?? null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfApiPath, setPdfApiPath] = useState<string | null>(null);
   const [rendering, setRendering] = useState(false);
   const [compileError, setCompileError] = useState<CompileError | null>(null);
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
@@ -41,7 +42,7 @@ export default function ResumeEditor() {
         const r = await resumeApi.getBaseResume(id);
         setTex(r.tex_source);
         setLabel(r.label);
-        setPdfUrl(resumeApi.baseResumePdfUrl(id));
+        setPdfApiPath(resumeApi.baseResumePdfUrl(id));
         const snaps = await resumeApi.listSnapshots(id);
         setSnapshots(snaps);
       } else if (templateId) {
@@ -120,8 +121,9 @@ export default function ResumeEditor() {
     setCompileError(null);
     try {
       await resumeApi.renderBaseResume(resumeId);
-      // bust cache by appending timestamp
-      setPdfUrl(`${resumeApi.baseResumePdfUrl(resumeId)}?t=${Date.now()}`);
+      // Toggle path to force usePdfBlob to re-fetch
+      setPdfApiPath(null);
+      setTimeout(() => setPdfApiPath(resumeApi.baseResumePdfUrl(resumeId)), 50);
     } catch (err: unknown) {
       const e = err as { body?: { errors?: string[]; raw_output?: string } };
       if (e.body?.errors) {
@@ -270,8 +272,8 @@ export default function ResumeEditor() {
 
         {/* PDF preview */}
         <div className="w-[48%] bg-gray-950 border-l border-gray-800 flex items-center justify-center">
-          {pdfUrl ? (
-            <iframe src={pdfUrl} className="w-full h-full" title="PDF preview" />
+          {pdfApiPath ? (
+            <PdfViewer apiPath={pdfApiPath} className="w-full h-full" title="PDF preview" />
           ) : (
             <div className="text-center text-gray-600">
               <p className="text-sm">Click "Render Preview" to compile your LaTeX</p>

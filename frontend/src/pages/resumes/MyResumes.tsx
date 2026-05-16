@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as resumeApi from "../../api/resumes";
 import type { BaseResume } from "../../api/resumes";
+import { PdfViewer } from "../../components/PdfViewer";
 
 function sourceLabel(r: BaseResume): string {
   if (r.source_type === "template") return "From template";
@@ -131,8 +132,8 @@ export default function MyResumes() {
               <span className="text-white font-medium">PDF Preview</span>
               <button onClick={() => setPreviewId(null)} className="text-gray-400 hover:text-white text-xl">×</button>
             </div>
-            <iframe
-              src={resumeApi.baseResumePdfUrl(previewId)}
+            <PdfViewer
+              apiPath={resumeApi.baseResumePdfUrl(previewId)}
               className="flex-1 min-h-[70vh] rounded-b-xl"
               title="Resume preview"
             />

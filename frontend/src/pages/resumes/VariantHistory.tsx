@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import * as resumeApi from "../../api/resumes";
 import type { DiffOut, Variant } from "../../api/resumes";
+import { PdfDownloadLink } from "../../components/PdfViewer";
 
 function AtsScoreBadge({ score }: { score: number | null }) {
   if (score === null) return <span className="text-gray-600 text-xs">—</span>;
@@ -98,14 +99,13 @@ export default function VariantHistory() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
-                      <a
-                        href={resumeApi.variantPdfUrl(v.id)}
-                        target="_blank"
-                        rel="noreferrer"
+                      <PdfDownloadLink
+                        apiPath={resumeApi.variantPdfUrl(v.id)}
+                        filename={`${v.company ?? "resume"}-${v.role_title ?? "variant"}.pdf`}
                         className="text-xs text-accent hover:underline"
                       >
                         PDF
-                      </a>
+                      </PdfDownloadLink>
                       <button
                         onClick={() => handleViewDiff(v)}
                         className="text-xs text-gray-400 hover:text-white transition-colors"
