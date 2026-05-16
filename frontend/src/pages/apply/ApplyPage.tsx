@@ -6,6 +6,8 @@ import type { Job } from "../../api/tailor";
 import { listBaseResumes, variantPdfUrl } from "../../api/resumes";
 import type { BaseResume } from "../../api/resumes";
 import { PdfViewer, PdfDownloadLink } from "../../components/PdfViewer";
+import { submitVariantScore, getScore } from "../../api/ats";
+import type { AtsScore } from "../../api/ats";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -124,6 +126,9 @@ export default function ApplyPage() {
   const [steps, setSteps] = useState<ProgressStep[]>([]);
   const [tailorError, setTailorError] = useState<string | null>(null);
   const [variantId, setVariantId] = useState<string | null>(null);
+  const [atsScore, setAtsScore] = useState<AtsScore | null>(null);
+  const [scoringAts, setScoringAts] = useState(false);
+  const atsPollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   // Cleanup EventSource on unmount
@@ -315,21 +320,14 @@ export default function ApplyPage() {
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="flex h-[calc(100vh-4rem)] overflow-hidden -m-8">
           {/* Left action panel */}
-          <div className="w-80 shrink-0 p-6 bg-white border-r border-gray-200 flex flex-col gap-4 overflow-y-auto">
-            <h2 className="text-gray-900 font-semibold">&#10003; Tailoring complete</h2>
-
-            {/* Completed steps list */}
-            <div className="space-y-2">
-              {steps.map((s, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 shrink-0">&#10003;</span>
-                  <span className="text-gray-700">{s.message}</span>
-                </div>
-              ))}
+          <div className="w-96 shrink-0 p-6 bg-white border-r border-gray-200 flex flex-col gap-4 overflow-y-auto">
+            <div className="flex items-center gap-2">
+              <span className="text-green-500">✓</span>
+              <h2 className="text-gray-900 font-semibold">Resume tailored</h2>
             </div>
 
-            {/* Action buttons */}
-            <div className="mt-auto space-y-2">
+            {/* Download + secondary actions */}
+            <div className="space-y-2">
               <PdfDownloadLink
                 apiPath={variantPdfUrl(variantId)}
                 filename="tailored-resume.pdf"
@@ -337,30 +335,113 @@ export default function ApplyPage() {
               >
                 Download PDF
               </PdfDownloadLink>
-              <button
-                onClick={() => navigate("/applications")}
-                className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg py-2.5 text-center transition-colors"
-              >
-                Score ATS
-              </button>
-              <button
-                onClick={() => navigate("/applications")}
-                className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg py-2.5 text-center transition-colors"
-              >
-                View in Applications
-              </button>
-              <button
-                onClick={() => {
-                  setStep(3);
-                  setSteps([]);
-                  setVariantId(null);
-                  setTailoring(false);
-                  setTailorError(null);
-                }}
-                className="block w-full text-gray-400 hover:text-gray-900 text-sm py-2 transition-colors"
-              >
-                Tailor again
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => navigate("/applications")}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded-lg py-2 transition-colors"
+                >
+                  View in Applications
+                </button>
+                <button
+                  onClick={() => { setStep(3); setSteps([]); setVariantId(null); setAtsScore(null); setTailoring(false); setTailorError(null); if (atsPollerRef.current) clearInterval(atsPollerRef.current); }}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded-lg py-2 transition-colors"
+                >
+                  Tailor again
+                </button>
+              </div>
+            </div>
+
+            {/* ATS Scoring section */}
+            <div className="border-t border-gray-100 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-gray-700 text-sm font-medium">ATS Score</p>
+                {!atsScore && (
+                  <button
+                    onClick={async () => {
+                      if (!variantId || scoringAts) return;
+                      setScoringAts(true);
+                      setAtsScore(null);
+                      try {
+                        const result = await submitVariantScore(variantId);
+                        if ("score_id" in result) {
+                          const pending: AtsScore = { id: result.score_id, status: "pending", overall_score: null, breakdown: null, missing_keywords: null, suggestions: null, error_message: null, created_at: new Date().toISOString() };
+                          setAtsScore(pending);
+                          atsPollerRef.current = setInterval(async () => {
+                            const s = await getScore(result.score_id);
+                            if (s.status !== "pending") { setAtsScore(s); clearInterval(atsPollerRef.current!); setScoringAts(false); }
+                          }, 2000);
+                        } else {
+                          setAtsScore(result as AtsScore);
+                          setScoringAts(false);
+                        }
+                      } catch { setScoringAts(false); }
+                    }}
+                    disabled={scoringAts}
+                    className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg px-3 py-1.5 disabled:opacity-50 transition-colors"
+                  >
+                    {scoringAts ? "Scoring…" : "Score now"}
+                  </button>
+                )}
+                {atsScore?.status === "complete" && (
+                  <button onClick={() => { setAtsScore(null); setScoringAts(false); if (atsPollerRef.current) clearInterval(atsPollerRef.current); }}
+                    className="text-xs text-gray-400 hover:text-gray-700">Re-score</button>
+                )}
+              </div>
+
+              {!atsScore && !scoringAts && (
+                <p className="text-gray-400 text-xs">Click "Score now" to check how this resume performs against the job description.</p>
+              )}
+
+              {atsScore?.status === "pending" && (
+                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                  <span className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                  Analysing… (~30s)
+                </div>
+              )}
+
+              {atsScore?.status === "failed" && (
+                <p className="text-red-500 text-xs">{atsScore.error_message ?? "Scoring failed"}</p>
+              )}
+
+              {atsScore?.status === "complete" && (() => {
+                const s = atsScore.overall_score ?? 0;
+                const color = s >= 70 ? "text-green-600" : s >= 50 ? "text-yellow-600" : "text-red-600";
+                const LABELS: Record<string, string> = { keyword_match: "Keywords", semantic_relevance: "Relevance", formatting: "Formatting", action_verbs: "Action Verbs", quantification: "Quantification", seniority_match: "Seniority" };
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-4xl font-bold ${color}`}>{s}</span>
+                      <div>
+                        <p className="text-gray-700 text-sm font-medium">ATS Score</p>
+                        <p className="text-gray-400 text-xs">{s >= 70 ? "Strong match" : s >= 50 ? "Moderate match" : "Needs improvement"}</p>
+                      </div>
+                    </div>
+                    {atsScore.breakdown && (
+                      <div className="space-y-1.5">
+                        {Object.entries(atsScore.breakdown).map(([k, v]) => (
+                          <div key={k} className="flex items-center gap-2">
+                            <span className="text-gray-400 text-xs w-20 shrink-0">{LABELS[k] ?? k}</span>
+                            <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                              <div className={`h-1.5 rounded-full ${(v as number) >= 70 ? "bg-green-500" : (v as number) >= 50 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${v}%` }} />
+                            </div>
+                            <span className="text-xs text-gray-600 w-6 text-right">{v as number}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {atsScore.missing_keywords && atsScore.missing_keywords.length > 0 && (
+                      <div>
+                        <p className="text-gray-400 text-xs mb-1">Missing keywords</p>
+                        <div className="flex flex-wrap gap-1">
+                          {atsScore.missing_keywords.slice(0, 5).map((k, i) => (
+                            <span key={i} className={`text-xs px-1.5 py-0.5 rounded ${k.priority === "high" ? "bg-red-50 text-red-600" : "bg-gray-100 text-gray-500"}`}>{k.term}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
