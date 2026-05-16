@@ -31,14 +31,14 @@ const ACTIVE_STATUSES: AppStatus[] = ["saved", "tailoring", "applied", "oa_scree
 
 // ── sub-components ────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, valueColor = "text-white" }: {
+function StatCard({ label, value, sub, valueColor = "text-gray-900" }: {
   label: string; value: string | number; sub?: string; valueColor?: string;
 }) {
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
-      <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">{label}</p>
+    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+      <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">{label}</p>
       <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
-      {sub && <p className="text-gray-500 text-xs mt-1">{sub}</p>}
+      {sub && <p className="text-gray-400 text-xs mt-1">{sub}</p>}
     </div>
   );
 }
@@ -46,26 +46,26 @@ function StatCard({ label, value, sub, valueColor = "text-white" }: {
 function JobCard({ app }: { app: Application }) {
   return (
     <Link to="/applications">
-      <div className="bg-gray-900 rounded-lg border border-gray-800 p-3 mb-2 hover:border-gray-600 cursor-pointer">
-        <p className="text-white text-sm font-medium truncate">{app.company}</p>
-        <p className="text-gray-400 text-xs truncate">{app.role_title}</p>
+      <div className="bg-white rounded-lg border border-gray-200 p-3 mb-2 hover:border-gray-300 cursor-pointer shadow-sm">
+        <p className="text-gray-900 text-sm font-medium truncate">{app.company}</p>
+        <p className="text-gray-500 text-xs truncate">{app.role_title}</p>
         <div className="flex items-center gap-2 mt-2">
           {app.ats_score !== null && (
             <span
               className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                 app.ats_score >= 70
-                  ? "bg-green-900/40 text-green-400"
+                  ? "bg-green-50 text-green-700"
                   : app.ats_score >= 50
-                  ? "bg-yellow-900/40 text-yellow-400"
-                  : "bg-red-900/40 text-red-400"
+                  ? "bg-yellow-50 text-yellow-700"
+                  : "bg-red-50 text-red-700"
               }`}
             >
               {app.ats_score}
             </span>
           )}
-          <span className="text-gray-600 text-xs">{daysAgo(app.created_at)}d</span>
+          <span className="text-gray-400 text-xs">{daysAgo(app.created_at)}d</span>
           {isOverdue(app.follow_up_date) && (
-            <span className="text-red-400 text-xs">⚠</span>
+            <span className="text-red-500 text-xs">⚠</span>
           )}
         </div>
       </div>
@@ -93,8 +93,8 @@ function PipelineColumn({
     >
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-gray-300 text-sm font-medium">{label}</span>
-        <span className="bg-gray-800 text-gray-400 rounded-full px-2 text-xs py-0.5">
+        <span className="text-gray-700 text-sm font-medium">{label}</span>
+        <span className="bg-gray-100 text-gray-500 rounded-full px-2 text-xs py-0.5">
           {apps.length}
         </span>
       </div>
@@ -105,8 +105,8 @@ function PipelineColumn({
           <JobCard key={app.id} app={app} />
         ))}
         {apps.length === 0 && (
-          <div className="border border-dashed border-gray-800 rounded-lg h-16 flex items-center justify-center">
-            <span className="text-gray-700 text-xs">Empty</span>
+          <div className="border border-dashed border-gray-200 rounded-lg h-16 flex items-center justify-center">
+            <span className="text-gray-300 text-xs">Empty</span>
           </div>
         )}
       </div>
@@ -119,9 +119,9 @@ function SkeletonPipeline() {
     <div className="flex gap-4 overflow-x-auto pb-4">
       {[0, 1, 2].map((i) => (
         <div key={i} className="w-52 shrink-0">
-          <div className="h-5 bg-gray-800 rounded animate-pulse mb-3 w-24" />
-          <div className="h-16 bg-gray-800 rounded-lg animate-pulse mb-2" />
-          <div className="h-16 bg-gray-800 rounded-lg animate-pulse mb-2" />
+          <div className="h-5 bg-gray-200 rounded animate-pulse mb-3 w-24" />
+          <div className="h-16 bg-gray-200 rounded-lg animate-pulse mb-2" />
+          <div className="h-16 bg-gray-200 rounded-lg animate-pulse mb-2" />
         </div>
       ))}
     </div>
@@ -131,16 +131,16 @@ function SkeletonPipeline() {
 function EmptyState() {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-12 flex flex-col items-center text-center gap-4 max-w-sm w-full">
-        <p className="text-2xl font-bold text-white">JobCraft</p>
-        <p className="text-gray-400 text-base">Ready to land your next role?</p>
+      <div className="bg-white rounded-2xl border border-gray-200 p-12 flex flex-col items-center text-center gap-4 max-w-sm w-full shadow-sm">
+        <p className="text-2xl font-bold text-gray-900">JobCraft</p>
+        <p className="text-gray-500 text-base">Ready to land your next role?</p>
         <Link
           to="/apply"
           className="bg-accent hover:opacity-90 text-white font-semibold px-6 py-3 rounded-lg transition-opacity"
         >
           Apply to your first job →
         </Link>
-        <p className="text-gray-600 text-sm">
+        <p className="text-gray-400 text-sm">
           Your job applications will appear here as a pipeline.
         </p>
       </div>
@@ -203,8 +203,8 @@ export default function DashboardPage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <p className="text-gray-400 text-sm mt-0.5">Your job search pipeline</p>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-500 text-sm mt-0.5">Your job search pipeline</p>
           </div>
         </div>
         <SkeletonPipeline />
@@ -217,8 +217,8 @@ export default function DashboardPage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <p className="text-gray-400 text-sm mt-0.5">Your job search pipeline</p>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-500 text-sm mt-0.5">Your job search pipeline</p>
           </div>
           <Link
             to="/apply"
@@ -237,36 +237,36 @@ export default function DashboardPage() {
       {/* Top bar */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-gray-400 text-sm mt-0.5">Your job search pipeline</p>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Your job search pipeline</p>
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
           {/* Stats strip */}
           <div className="flex items-center gap-2">
-            <span className="bg-gray-800 text-gray-300 text-xs px-3 py-1.5 rounded-full">
+            <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full">
               Active&nbsp;
-              <span className="font-semibold text-white">{activeCount}</span>
+              <span className="font-semibold text-gray-900">{activeCount}</span>
             </span>
             {avgAts !== null && (
-              <span className="bg-gray-800 text-gray-300 text-xs px-3 py-1.5 rounded-full">
+              <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full">
                 Avg ATS&nbsp;
                 <span
                   className={`font-semibold ${
                     avgAts >= 70
-                      ? "text-green-400"
+                      ? "text-green-600"
                       : avgAts >= 50
-                      ? "text-yellow-400"
-                      : "text-red-400"
+                      ? "text-yellow-600"
+                      : "text-red-600"
                   }`}
                 >
                   {avgAts}
                 </span>
               </span>
             )}
-            <span className="bg-gray-800 text-gray-300 text-xs px-3 py-1.5 rounded-full">
+            <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full">
               Interviews&nbsp;
-              <span className="font-semibold text-white">{interviewCount}</span>
+              <span className="font-semibold text-gray-900">{interviewCount}</span>
             </span>
           </div>
 
@@ -298,7 +298,7 @@ export default function DashboardPage() {
           type="checkbox"
           checked={showClosed}
           onChange={(e) => setShowClosed(e.target.checked)}
-          className="rounded border-gray-600 bg-gray-800 text-accent focus:ring-accent"
+          className="rounded border-gray-300 bg-white text-accent focus:ring-accent"
         />
         <label htmlFor="show-closed" className="text-gray-500 text-sm cursor-pointer select-none">
           Show rejected / withdrawn
@@ -318,16 +318,16 @@ export default function DashboardPage() {
             value={stats.avg_ats_score ?? "—"}
             sub={`across ${stats.total_scores} scored resume${stats.total_scores !== 1 ? "s" : ""}`}
             valueColor={
-              stats.avg_ats_score === null ? "text-gray-500" :
-              stats.avg_ats_score >= 70 ? "text-green-400" :
-              stats.avg_ats_score >= 50 ? "text-yellow-400" : "text-red-400"
+              stats.avg_ats_score === null ? "text-gray-400" :
+              stats.avg_ats_score >= 70 ? "text-green-600" :
+              stats.avg_ats_score >= 50 ? "text-yellow-600" : "text-red-600"
             }
           />
           <StatCard
             label="Skill Gaps"
             value={stats.skill_gap_summary.total}
             sub={`${stats.skill_gap_summary.acquired} acquired · ${stats.skill_gap_summary.learning} learning`}
-            valueColor="text-blue-400"
+            valueColor="text-blue-600"
           />
           <StatCard
             label="AI Cost (this month)"
@@ -339,15 +339,15 @@ export default function DashboardPage() {
 
       {/* ── Recent activity ── */}
       {stats && stats.recent_activity.length > 0 && (
-        <div className="mt-6 bg-gray-900 rounded-xl border border-gray-800 p-5">
-          <p className="text-gray-400 text-xs uppercase tracking-wide mb-4">Recent Activity</p>
+        <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <p className="text-gray-500 text-xs uppercase tracking-wide mb-4">Recent Activity</p>
           <div className="space-y-2.5">
             {stats.recent_activity.map((item, i) => (
               <div key={i} className="flex items-start gap-3 text-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-1.5" />
                 <div className="flex-1">
-                  <span className="text-white capitalize">{item.action.replace(/_/g, " ")}</span>
-                  <span className="text-gray-600 ml-2 text-xs">
+                  <span className="text-gray-900 capitalize">{item.action.replace(/_/g, " ")}</span>
+                  <span className="text-gray-400 ml-2 text-xs">
                     {new Date(item.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>

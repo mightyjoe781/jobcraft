@@ -17,19 +17,19 @@ import { PdfViewer, PdfDownloadLink } from "../../components/PdfViewer";
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
 const STATUS_COLORS: Record<AppStatus, string> = {
-  saved:      "bg-gray-800 text-gray-400",
-  tailoring:  "bg-indigo-900/40 text-indigo-400",
-  applied:    "bg-blue-900/40 text-blue-400",
-  oa_screen:  "bg-yellow-900/40 text-yellow-400",
-  interview:  "bg-orange-900/40 text-orange-400",
-  offer:      "bg-green-900/40 text-green-400",
-  rejected:   "bg-red-900/40 text-red-400",
-  withdrawn:  "bg-gray-800 text-gray-500",
+  saved:      "bg-gray-100 text-gray-500",
+  tailoring:  "bg-indigo-50 text-indigo-600",
+  applied:    "bg-blue-50 text-blue-600",
+  oa_screen:  "bg-yellow-50 text-yellow-700",
+  interview:  "bg-orange-50 text-orange-700",
+  offer:      "bg-green-50 text-green-700",
+  rejected:   "bg-red-50 text-red-700",
+  withdrawn:  "bg-gray-100 text-gray-400",
 };
 
 function AtsScoreBadge({ score }: { score: number | null }) {
-  if (score === null) return <span className="text-gray-500 text-xs">—</span>;
-  const color = score >= 70 ? "text-green-400" : score >= 50 ? "text-yellow-400" : "text-red-400";
+  if (score === null) return <span className="text-gray-400 text-xs">—</span>;
+  const color = score >= 70 ? "text-green-600" : score >= 50 ? "text-yellow-600" : "text-red-600";
   return <span className={`text-xs font-semibold ${color}`}>{score}</span>;
 }
 
@@ -50,22 +50,22 @@ function JobListItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-4 py-3 border-b border-gray-800 transition-colors ${
-        selected ? "bg-gray-800 border-l-2 border-l-accent" : "hover:bg-gray-900/60"
+      className={`w-full text-left px-4 py-3 border-b border-gray-200 transition-colors ${
+        selected ? "bg-gray-50 border-l-2 border-l-accent" : "hover:bg-gray-50"
       }`}
     >
       <div className="flex items-center justify-between gap-2 mb-0.5">
-        <p className="text-white text-sm font-medium truncate">{app.company}</p>
-        {isOverdue && <span className="text-red-400 text-xs shrink-0">⚠</span>}
+        <p className="text-gray-900 text-sm font-medium truncate">{app.company}</p>
+        {isOverdue && <span className="text-red-500 text-xs shrink-0">⚠</span>}
       </div>
-      <p className="text-gray-400 text-xs truncate mb-1.5">{app.role_title}</p>
+      <p className="text-gray-500 text-xs truncate mb-1.5">{app.role_title}</p>
       <div className="flex items-center justify-between">
         <span className={`text-xs px-1.5 py-0.5 rounded ${STATUS_COLORS[app.status]}`}>
           {STATUS_LABELS[app.status]}
         </span>
         <div className="flex items-center gap-2">
           <AtsScoreBadge score={app.ats_score} />
-          <span className="text-gray-600 text-xs">{daysOpen}d</span>
+          <span className="text-gray-400 text-xs">{daysOpen}d</span>
         </div>
       </div>
     </button>
@@ -111,19 +111,19 @@ function VariantAtsScore({ variantId }: { variantId: string }) {
   if (!score) {
     return (
       <button onClick={() => void handleScore()} disabled={scoring}
-        className="text-xs text-gray-400 hover:text-white disabled:opacity-50 transition-colors">
+        className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50 transition-colors">
         {scoring ? "Scoring…" : "Score"}
       </button>
     );
   }
   if (score.status === "pending") {
-    return <span className="text-xs text-gray-400 flex items-center gap-1"><span className="w-3 h-3 border border-accent border-t-transparent rounded-full animate-spin" />Scoring…</span>;
+    return <span className="text-xs text-gray-500 flex items-center gap-1"><span className="w-3 h-3 border border-accent border-t-transparent rounded-full animate-spin" />Scoring…</span>;
   }
   if (score.status === "failed") {
-    return <button onClick={() => void handleScore()} className="text-xs text-red-400 hover:underline">Failed — retry</button>;
+    return <button onClick={() => void handleScore()} className="text-xs text-red-600 hover:underline">Failed — retry</button>;
   }
   const s = score.overall_score ?? 0;
-  const color = s >= 70 ? "text-green-400" : s >= 50 ? "text-yellow-400" : "text-red-400";
+  const color = s >= 70 ? "text-green-600" : s >= 50 ? "text-yellow-600" : "text-red-600";
   return (
     <span className={`text-xs font-semibold ${color}`} title="ATS Score">{s} ATS</span>
   );
@@ -183,13 +183,13 @@ function VariantsTab({
   }
 
   if (loading) {
-    return <div className="p-6 text-gray-500 text-sm">Loading variants…</div>;
+    return <div className="p-6 text-gray-400 text-sm">Loading variants…</div>;
   }
 
   return (
     <div className="p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-gray-400 text-sm">
+        <p className="text-gray-500 text-sm">
           {variants.length} variant{variants.length !== 1 ? "s" : ""} for this job
         </p>
         <button
@@ -201,8 +201,8 @@ function VariantsTab({
       </div>
 
       {variants.length === 0 ? (
-        <div className="text-center py-12 bg-gray-900/50 rounded-xl border border-gray-800 border-dashed">
-          <p className="text-gray-500 text-sm mb-3">No variants yet</p>
+        <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
+          <p className="text-gray-400 text-sm mb-3">No variants yet</p>
           <button
             onClick={() => navigate(`/apply?job_id=${app.job_id}`)}
             className="text-accent text-sm hover:underline"
@@ -215,8 +215,8 @@ function VariantsTab({
           {variants.map((v) => (
             <div
               key={v.id}
-              className={`flex items-center gap-3 bg-gray-900 rounded-xl border px-4 py-3 ${
-                app.variant_id === v.id ? "border-accent/50" : "border-gray-800"
+              className={`flex items-center gap-3 bg-white rounded-xl border px-4 py-3 shadow-sm ${
+                app.variant_id === v.id ? "border-accent/50" : "border-gray-200"
               }`}
             >
               <div className="flex-1 min-w-0">
@@ -224,7 +224,7 @@ function VariantsTab({
                   {app.variant_id === v.id && (
                     <span className="text-accent text-xs font-medium">Active</span>
                   )}
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-gray-500 text-xs">
                     {new Date(v.created_at).toLocaleDateString()} {new Date(v.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
@@ -239,20 +239,20 @@ function VariantsTab({
                 <PdfDownloadLink
                   apiPath={resumeApi.variantPdfUrl(v.id)}
                   filename={`${app.company}-${app.role_title}.pdf`}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Download
                 </PdfDownloadLink>
                 {app.variant_id !== v.id && (
-                  <button onClick={() => void handleSetActive(v.id)} className="text-gray-400 hover:text-white transition-colors">
+                  <button onClick={() => void handleSetActive(v.id)} className="text-gray-500 hover:text-gray-900 transition-colors">
                     Set active
                   </button>
                 )}
-                <button onClick={() => void handleFork(v)} className="text-gray-400 hover:text-white transition-colors">Fork</button>
+                <button onClick={() => void handleFork(v)} className="text-gray-500 hover:text-gray-900 transition-colors">Fork</button>
                 <button
                   onClick={() => void handleDelete(v.id)}
                   disabled={deleting === v.id}
-                  className="text-gray-600 hover:text-red-400 transition-colors"
+                  className="text-gray-400 hover:text-red-600 transition-colors"
                 >
                   {deleting === v.id ? "…" : "Delete"}
                 </button>
@@ -264,15 +264,15 @@ function VariantsTab({
 
       {previewId && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6"
           onClick={() => setPreviewId(null)}
         >
           <div
-            className="bg-gray-900 rounded-xl border border-gray-700 w-full max-w-3xl max-h-[90vh] flex flex-col"
+            className="bg-white rounded-xl border border-gray-200 w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 shrink-0">
-              <span className="text-white text-sm font-medium">Preview</span>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 shrink-0">
+              <span className="text-gray-900 text-sm font-medium">Preview</span>
               <div className="flex items-center gap-3">
                 <PdfDownloadLink
                   apiPath={resumeApi.variantPdfUrl(previewId)}
@@ -281,7 +281,7 @@ function VariantsTab({
                 >
                   Download
                 </PdfDownloadLink>
-                <button onClick={() => setPreviewId(null)} className="text-gray-400 hover:text-white text-xl">×</button>
+                <button onClick={() => setPreviewId(null)} className="text-gray-400 hover:text-gray-900 text-xl">×</button>
               </div>
             </div>
             <PdfViewer apiPath={resumeApi.variantPdfUrl(previewId)} className="flex-1 min-h-[70vh] rounded-b-xl" />
@@ -341,7 +341,7 @@ function CoverLetterTab({ app }: { app: Application }) {
         <select
           value={tone}
           onChange={(e) => setTone(e.target.value as typeof tone)}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
         >
           <option value="formal">Formal</option>
           <option value="conversational">Conversational</option>
@@ -359,20 +359,20 @@ function CoverLetterTab({ app }: { app: Application }) {
             <button
               onClick={async () => { setSaving(true); try { await coverLetterApi.updateCoverLetter(activeLetterId, activeText); } finally { setSaving(false); } }}
               disabled={saving}
-              className="text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg px-3 py-2"
+              className="text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-900 rounded-lg px-3 py-2"
             >
               {saving ? "Saving…" : "Save"}
             </button>
             <button
               onClick={async () => { await navigator.clipboard.writeText(activeText); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-              className="text-sm text-gray-400 hover:text-white transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
             <PdfDownloadLink
               apiPath={coverLetterApi.coverLetterPdfPath(activeLetterId)}
               filename={`cover-letter-${app.company}.pdf`}
-              className="text-sm text-gray-400 hover:text-white transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
             >
               Export PDF
             </PdfDownloadLink>
@@ -386,15 +386,15 @@ function CoverLetterTab({ app }: { app: Application }) {
           onChange={(e) => setActiveText(e.target.value)}
           disabled={generating}
           rows={14}
-          className="w-full bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 text-white text-sm leading-7 resize-y focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-70"
+          className="w-full bg-white border border-gray-200 rounded-xl px-5 py-4 text-gray-900 text-sm leading-7 resize-y focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-70"
           style={{ fontFamily: "Georgia, serif" }}
           placeholder="Cover letter will appear here…"
         />
       )}
 
       {!activeText && !generating && (
-        <div className="text-center py-12 bg-gray-900/50 rounded-xl border border-gray-800 border-dashed">
-          <p className="text-gray-500 text-sm">No cover letter yet — click Generate to create one.</p>
+        <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
+          <p className="text-gray-400 text-sm">No cover letter yet — click Generate to create one.</p>
         </div>
       )}
     </div>
@@ -419,10 +419,10 @@ function SkillGapsTab({ app }: { app: Application }) {
   };
 
   const GAP_STATUS_COLORS: Record<GapStatus, string> = {
-    identified: "text-gray-400 bg-gray-800",
-    learning: "text-blue-400 bg-blue-900/30",
-    acquired: "text-green-400 bg-green-900/30",
-    not_pursuing: "text-gray-600 bg-gray-900",
+    identified: "text-gray-500 bg-gray-100",
+    learning: "text-blue-600 bg-blue-50",
+    acquired: "text-green-600 bg-green-50",
+    not_pursuing: "text-gray-400 bg-gray-50",
   };
 
   return (
@@ -431,7 +431,7 @@ function SkillGapsTab({ app }: { app: Application }) {
         <select
           value={baseId}
           onChange={(e) => setBaseId(e.target.value)}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
         >
           {bases.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
         </select>
@@ -447,12 +447,12 @@ function SkillGapsTab({ app }: { app: Application }) {
         >
           {analyzing ? "Analyzing…" : gaps.length > 0 ? "Re-analyze" : "Analyze gaps"}
         </button>
-        {!app.jd_text && <p className="text-gray-500 text-xs">Add a JD in Details first</p>}
+        {!app.jd_text && <p className="text-gray-400 text-xs">Add a JD in Details first</p>}
       </div>
 
       {gaps.length === 0 && !analyzing && (
-        <div className="text-center py-12 bg-gray-900/50 rounded-xl border border-gray-800 border-dashed">
-          <p className="text-gray-500 text-sm">No gap analysis yet.</p>
+        <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
+          <p className="text-gray-400 text-sm">No gap analysis yet.</p>
         </div>
       )}
 
@@ -461,16 +461,16 @@ function SkillGapsTab({ app }: { app: Application }) {
         if (!catGaps.length) return null;
         return (
           <div key={cat}>
-            <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">{CATEGORY_LABELS[cat]}</p>
+            <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">{CATEGORY_LABELS[cat]}</p>
             <div className="space-y-2">
               {catGaps.map((g) => (
-                <div key={g.id} className={`flex items-start gap-3 bg-gray-900 rounded-lg border border-gray-800 px-4 py-3 ${g.status === "acquired" || g.status === "not_pursuing" ? "opacity-50" : ""}`}>
-                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 mt-0.5 ${g.priority >= 8 ? "bg-red-900/40 text-red-400" : g.priority >= 5 ? "bg-yellow-900/40 text-yellow-400" : "bg-gray-800 text-gray-400"}`}>
+                <div key={g.id} className={`flex items-start gap-3 bg-white rounded-lg border border-gray-200 px-4 py-3 shadow-sm ${g.status === "acquired" || g.status === "not_pursuing" ? "opacity-50" : ""}`}>
+                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 mt-0.5 ${g.priority >= 8 ? "bg-red-50 text-red-700" : g.priority >= 5 ? "bg-yellow-50 text-yellow-700" : "bg-gray-100 text-gray-500"}`}>
                     P{g.priority}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium">{g.skill_name}</p>
-                    <p className="text-gray-500 text-xs mt-0.5">{g.suggested_resource}</p>
+                    <p className="text-gray-900 text-sm font-medium">{g.skill_name}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{g.suggested_resource}</p>
                   </div>
                   <select
                     value={g.status}
@@ -531,7 +531,7 @@ function DetailsTab({
             <button
               key={s}
               onClick={async () => { const updated = await appApi.updateApplication(app.id, { status: s }); onUpdate(updated); }}
-              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${app.status === s ? STATUS_COLORS[s] + " ring-1 ring-current" : "bg-gray-800 text-gray-500 hover:text-white"}`}
+              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${app.status === s ? STATUS_COLORS[s] + " ring-1 ring-current" : "bg-gray-100 text-gray-400 hover:text-gray-900"}`}
             >
               {STATUS_LABELS[s]}
             </button>
@@ -549,14 +549,14 @@ function DetailsTab({
           value={jdText}
           onChange={(e) => setJdText(e.target.value)}
           rows={6}
-          className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm resize-y focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-accent"
           placeholder="Paste the job description — used for ATS scoring and skill gap analysis"
         />
         <div className="flex justify-end mt-1.5">
           <button
             onClick={async () => { setSavingJd(true); try { await updateJob(app.job_id, { jd_text: jdText }); } finally { setSavingJd(false); } }}
             disabled={savingJd}
-            className="text-xs bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg px-3 py-1.5 transition-colors"
+            className="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-900 rounded-lg px-3 py-1.5 transition-colors"
           >
             {savingJd ? "Saving…" : "Save JD"}
           </button>
@@ -571,7 +571,7 @@ function DetailsTab({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent"
             placeholder="Recruiter name, next steps, interview notes…"
           />
         </div>
@@ -581,7 +581,7 @@ function DetailsTab({
             <input
               value={referral}
               onChange={(e) => setReferral(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="Name or email"
             />
           </div>
@@ -591,14 +591,14 @@ function DetailsTab({
               type="date"
               value={followUp}
               onChange={(e) => setFollowUp(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
         </div>
         <div className="flex items-center justify-between pt-1">
           <button
             onClick={() => { if (confirm("Remove this job from tracking?")) void onDelete(app.id); }}
-            className="text-xs text-gray-600 hover:text-red-400 transition-colors"
+            className="text-xs text-gray-400 hover:text-red-600 transition-colors"
           >
             Remove from tracking
           </button>
@@ -615,7 +615,7 @@ function DetailsTab({
               } finally { setSavingNotes(false); }
             }}
             disabled={savingNotes}
-            className="text-xs bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg px-3 py-1.5 transition-colors"
+            className="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-900 rounded-lg px-3 py-1.5 transition-colors"
           >
             {savingNotes ? "Saving…" : "Save"}
           </button>
@@ -647,11 +647,11 @@ function JobDetail({
   return (
     <div className="flex flex-col h-full">
       {/* Job header */}
-      <div className="px-6 py-4 border-b border-gray-800 shrink-0">
+      <div className="px-6 py-4 border-b border-gray-200 shrink-0">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-white">{app.company}</h2>
-            <p className="text-gray-400 text-sm mt-0.5">{app.role_title}</p>
+            <h2 className="text-xl font-bold text-gray-900">{app.company}</h2>
+            <p className="text-gray-500 text-sm mt-0.5">{app.role_title}</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <select
@@ -673,27 +673,27 @@ function JobDetail({
         </div>
 
         {/* ATS badge + variant count */}
-        <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+        <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
           {app.ats_score !== null && (
             <span>ATS: <AtsScoreBadge score={app.ats_score} /></span>
           )}
           <span>{app.variant_count} variant{app.variant_count !== 1 ? "s" : ""}</span>
           {app.follow_up_date && new Date(app.follow_up_date) < new Date() && (
-            <span className="text-red-400">⚠ Follow-up overdue</span>
+            <span className="text-red-600">⚠ Follow-up overdue</span>
           )}
         </div>
       </div>
 
       {/* Tab bar */}
-      <div className="flex border-b border-gray-800 shrink-0 bg-gray-900/40">
+      <div className="flex border-b border-gray-200 shrink-0 bg-gray-50">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t.id
-                ? "border-accent text-white"
-                : "border-transparent text-gray-500 hover:text-gray-300"
+                ? "border-accent text-gray-900"
+                : "border-transparent text-gray-400 hover:text-gray-700"
             }`}
           >
             {t.label}
@@ -751,9 +751,9 @@ export default function ApplicationsPage() {
   if (loading) {
     return (
       <div className="flex h-full">
-        <div className="w-72 border-r border-gray-800 space-y-px pt-2">
+        <div className="w-72 border-r border-gray-200 space-y-px pt-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="mx-3 h-16 rounded-lg bg-gray-900 animate-pulse" />
+            <div key={i} className="mx-3 h-16 rounded-lg bg-gray-200 animate-pulse" />
           ))}
         </div>
         <div className="flex-1" />
@@ -764,10 +764,10 @@ export default function ApplicationsPage() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* ── Left panel: job list ── */}
-      <div className="w-72 shrink-0 border-r border-gray-800 flex flex-col">
+      <div className="w-72 shrink-0 border-r border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
-          <span className="text-white font-semibold text-sm">Applications</span>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
+          <span className="text-gray-900 font-semibold text-sm">Applications</span>
           <Link
             to="/apply"
             className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
@@ -780,7 +780,7 @@ export default function ApplicationsPage() {
         <div className="flex-1 overflow-y-auto">
           {apps.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-gray-500 text-sm mb-3">No jobs yet</p>
+              <p className="text-gray-400 text-sm mb-3">No jobs yet</p>
               <Link to="/apply" className="text-accent text-sm hover:underline">
                 Apply to your first job →
               </Link>
@@ -809,7 +809,7 @@ export default function ApplicationsPage() {
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
-            <p className="text-gray-500 text-sm">Select a job from the list</p>
+            <p className="text-gray-400 text-sm">Select a job from the list</p>
             <Link to="/apply" className="text-accent text-sm hover:underline">
               Or apply to a new job →
             </Link>

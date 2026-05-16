@@ -17,17 +17,17 @@ const CATEGORY_LABELS: Record<GapCategory, string> = {
 const CATEGORY_ORDER: GapCategory[] = ["hard_skill", "tool", "domain", "seniority"];
 
 const STATUS_OPTIONS: { value: GapStatus; label: string; color: string }[] = [
-  { value: "identified", label: "Identified", color: "text-gray-400 bg-gray-800" },
-  { value: "learning", label: "Learning", color: "text-blue-400 bg-blue-900/30" },
-  { value: "acquired", label: "Acquired", color: "text-green-400 bg-green-900/30" },
-  { value: "not_pursuing", label: "Not pursuing", color: "text-gray-600 bg-gray-900" },
+  { value: "identified", label: "Identified", color: "text-gray-500 bg-gray-100" },
+  { value: "learning", label: "Learning", color: "text-blue-600 bg-blue-50" },
+  { value: "acquired", label: "Acquired", color: "text-green-600 bg-green-50" },
+  { value: "not_pursuing", label: "Not pursuing", color: "text-gray-400 bg-gray-50" },
 ];
 
 function PriorityBadge({ priority }: { priority: number }) {
   const color =
-    priority >= 8 ? "bg-red-900/40 text-red-400" :
-    priority >= 5 ? "bg-yellow-900/40 text-yellow-400" :
-    "bg-gray-800 text-gray-500";
+    priority >= 8 ? "bg-red-50 text-red-700" :
+    priority >= 5 ? "bg-yellow-50 text-yellow-700" :
+    "bg-gray-100 text-gray-500";
   return (
     <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${color}`}>
       P{priority}
@@ -66,16 +66,16 @@ function StatusToggle({ gap, onUpdate }: { gap: SkillGap; onUpdate: (g: SkillGap
 function GapCard({ gap, onUpdate }: { gap: SkillGap; onUpdate: (g: SkillGap) => void }) {
   const dimmed = gap.status === "not_pursuing" || gap.status === "acquired";
   return (
-    <div className={`bg-gray-900 rounded-xl border border-gray-800 p-4 space-y-2 transition-opacity ${dimmed ? "opacity-50" : ""}`}>
+    <div className={`bg-white rounded-xl border border-gray-200 p-4 space-y-2 shadow-sm transition-opacity ${dimmed ? "opacity-50" : ""}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <PriorityBadge priority={gap.priority} />
-          <span className="text-white font-medium truncate">{gap.skill_name}</span>
+          <span className="text-gray-900 font-medium truncate">{gap.skill_name}</span>
         </div>
         <StatusToggle gap={gap} onUpdate={onUpdate} />
       </div>
-      <p className="text-gray-400 text-xs leading-relaxed">{gap.why_it_matters}</p>
-      <div className="flex items-start gap-1.5 text-xs text-indigo-400">
+      <p className="text-gray-500 text-xs leading-relaxed">{gap.why_it_matters}</p>
+      <div className="flex items-start gap-1.5 text-xs text-indigo-600">
         <span className="shrink-0 mt-0.5">→</span>
         <span>{gap.suggested_resource}</span>
       </div>
@@ -157,24 +157,24 @@ export default function SkillGapsPage() {
 
   return (
     <div className="p-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-white mb-1">Skill Gap Analysis</h1>
-      <p className="text-gray-400 text-sm mb-8">
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Skill Gap Analysis</h1>
+      <p className="text-gray-500 text-sm mb-8">
         Discover what skills a target role requires that your resume doesn't yet show.
         Track your learning progress as you close each gap.
       </p>
 
       {/* Analysis form */}
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 mb-8">
-        <h2 className="text-white font-medium mb-4 text-sm">
+      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8 shadow-sm">
+        <h2 className="text-gray-900 font-medium mb-4 text-sm">
           {hasAnalyzed ? "Re-analyze" : "Choose a job and resume"}
         </h2>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">Job</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Job</label>
             <select
               value={jobId}
               onChange={(e) => { setJobId(e.target.value); setHasAnalyzed(false); setGaps([]); }}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             >
               {jobs.length === 0 && <option value="">No jobs yet</option>}
               {jobs.map((j) => (
@@ -183,11 +183,11 @@ export default function SkillGapsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">Base resume</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Base resume</label>
             <select
               value={baseId}
               onChange={(e) => setBaseId(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             >
               {bases.length === 0 && <option value="">No resumes yet</option>}
               {bases.map((b) => (
@@ -198,7 +198,7 @@ export default function SkillGapsPage() {
         </div>
 
         {error && (
-          <p className="text-red-400 text-sm mb-3">{error}</p>
+          <p className="text-red-600 text-sm mb-3">{error}</p>
         )}
 
         <button
@@ -218,7 +218,7 @@ export default function SkillGapsPage() {
       {/* Results */}
       {hasAnalyzed && gaps.length === 0 && !analyzing && (
         <div className="text-center py-12">
-          <p className="text-green-400 font-medium mb-1">No significant gaps found</p>
+          <p className="text-green-600 font-medium mb-1">No significant gaps found</p>
           <p className="text-gray-500 text-sm">
             Your resume is a strong match for {selectedJob?.role_title ?? "this role"}.
           </p>
@@ -230,19 +230,19 @@ export default function SkillGapsPage() {
           {/* Progress summary */}
           <div className="flex items-center gap-6 mb-6 text-sm">
             <div>
-              <span className="text-white font-semibold text-2xl">{gaps.length}</span>
-              <span className="text-gray-500 ml-1.5">total gaps</span>
+              <span className="text-gray-900 font-semibold text-2xl">{gaps.length}</span>
+              <span className="text-gray-400 ml-1.5">total gaps</span>
             </div>
             <div>
-              <span className="text-blue-400 font-semibold text-2xl">{activeCount}</span>
-              <span className="text-gray-500 ml-1.5">to address</span>
+              <span className="text-blue-600 font-semibold text-2xl">{activeCount}</span>
+              <span className="text-gray-400 ml-1.5">to address</span>
             </div>
             <div>
-              <span className="text-green-400 font-semibold text-2xl">{acquiredCount}</span>
-              <span className="text-gray-500 ml-1.5">acquired</span>
+              <span className="text-green-600 font-semibold text-2xl">{acquiredCount}</span>
+              <span className="text-gray-400 ml-1.5">acquired</span>
             </div>
             {gaps.length > 0 && (
-              <div className="flex-1 bg-gray-800 rounded-full h-1.5 ml-2">
+              <div className="flex-1 bg-gray-200 rounded-full h-1.5 ml-2">
                 <div
                   className="bg-green-500 h-1.5 rounded-full transition-all"
                   style={{ width: `${Math.round((acquiredCount / gaps.length) * 100)}%` }}
@@ -259,7 +259,7 @@ export default function SkillGapsPage() {
               <div key={cat} className="mb-8">
                 <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3">
                   {CATEGORY_LABELS[cat]}
-                  <span className="ml-2 text-gray-600 normal-case font-normal">
+                  <span className="ml-2 text-gray-400 normal-case font-normal">
                     {catGaps.length} gap{catGaps.length !== 1 ? "s" : ""}
                   </span>
                 </h3>

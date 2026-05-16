@@ -17,7 +17,7 @@ export function PdfViewer({ apiPath, className = "w-full h-full", title = "PDF" 
 
   if (loading) {
     return (
-      <div className={`${className} flex items-center justify-center bg-gray-950`}>
+      <div className={`${className} flex items-center justify-center bg-gray-50`}>
         <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -25,8 +25,8 @@ export function PdfViewer({ apiPath, className = "w-full h-full", title = "PDF" 
 
   if (error) {
     return (
-      <div className={`${className} flex items-center justify-center bg-gray-950`}>
-        <p className="text-red-400 text-sm">{error}</p>
+      <div className={`${className} flex items-center justify-center bg-gray-50`}>
+        <p className="text-red-600 text-sm">{error}</p>
       </div>
     );
   }

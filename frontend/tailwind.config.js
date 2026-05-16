@@ -5,18 +5,18 @@ export default {
     extend: {
       colors: {
         sidebar: {
-          DEFAULT: "#1a1d23",
-          hover: "#22262e",
-          active: "#2a2f3a",
+          DEFAULT: "#ffffff",
+          hover: "#f9fafb",
+          active: "#eef2ff",
         },
         accent: {
-          DEFAULT: "#6366f1",
-          hover: "#4f52d4",
+          DEFAULT: "#4f46e5",
+          hover: "#4338ca",
         },
         ats: {
-          low: "#ef4444",
-          mid: "#f59e0b",
-          high: "#22c55e",
+          low: "#dc2626",
+          mid: "#d97706",
+          high: "#059669",
         },
       },
     },

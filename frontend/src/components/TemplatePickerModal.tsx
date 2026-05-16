@@ -31,28 +31,28 @@ export function TemplatePickerModal({ onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6"
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6"
       onClick={onClose}
     >
       <div
-        className="bg-gray-900 rounded-xl border border-gray-700 w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl"
+        className="bg-white rounded-xl border border-gray-200 w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
           <div>
-            <h2 className="text-white font-semibold">Choose a template</h2>
-            <p className="text-gray-400 text-xs mt-0.5">
+            <h2 className="text-gray-900 font-semibold">Choose a template</h2>
+            <p className="text-gray-500 text-xs mt-0.5">
               All templates are editable in the LaTeX editor after selection.
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 text-xl leading-none">
             ×
           </button>
         </div>
 
         {/* Category filter */}
-        <div className="flex gap-2 px-6 py-3 border-b border-gray-800 shrink-0">
+        <div className="flex gap-2 px-6 py-3 border-b border-gray-200 shrink-0">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -60,7 +60,7 @@ export function TemplatePickerModal({ onClose }: Props) {
               className={`px-3 py-1 rounded-lg text-xs capitalize transition-colors ${
                 filter === cat
                   ? "bg-accent text-white"
-                  : "bg-gray-800 text-gray-400 hover:text-white"
+                  : "bg-gray-100 text-gray-500 hover:text-gray-900"
               }`}
             >
               {cat}
@@ -75,7 +75,7 @@ export function TemplatePickerModal({ onClose }: Props) {
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
-                  className="bg-gray-800 rounded-xl h-44 animate-pulse"
+                  className="bg-gray-200 rounded-xl h-44 animate-pulse"
                 />
               ))}
             </div>
@@ -84,28 +84,28 @@ export function TemplatePickerModal({ onClose }: Props) {
               {filtered.map((tmpl) => (
                 <div
                   key={tmpl.id}
-                  className="bg-gray-800 rounded-xl border border-gray-700 p-4 flex flex-col gap-3 hover:border-gray-500 transition-colors"
+                  className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col gap-3 hover:border-gray-300 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-white text-sm font-medium">{tmpl.name}</h3>
+                    <h3 className="text-gray-900 text-sm font-medium">{tmpl.name}</h3>
                     <span
                       className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
                         tmpl.is_ats_friendly
-                          ? "bg-green-900/40 text-green-400"
-                          : "bg-yellow-900/40 text-yellow-400"
+                          ? "bg-green-50 text-green-700"
+                          : "bg-yellow-50 text-yellow-700"
                       }`}
                     >
                       {tmpl.is_ats_friendly ? "ATS safe" : "ATS caution"}
                     </span>
                   </div>
-                  <p className="text-gray-400 text-xs flex-1">{tmpl.description}</p>
-                  <span className="text-xs text-gray-500 capitalize bg-gray-900 px-2 py-0.5 rounded w-fit">
+                  <p className="text-gray-500 text-xs flex-1">{tmpl.description}</p>
+                  <span className="text-xs text-gray-400 capitalize bg-gray-50 px-2 py-0.5 rounded w-fit">
                     {tmpl.category}
                   </span>
                   <div className="flex gap-2 mt-1">
                     <button
                       onClick={() => setPreview(tmpl)}
-                      className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs rounded-lg py-1.5 transition-colors"
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg py-1.5 transition-colors"
                     >
                       Preview
                     </button>
@@ -126,18 +126,18 @@ export function TemplatePickerModal({ onClose }: Props) {
       {/* Nested preview modal */}
       {preview && (
         <div
-          className="absolute inset-0 bg-black/60 flex items-center justify-center p-8 z-10"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center p-8 z-10"
           onClick={() => setPreview(null)}
         >
           <div
-            className="bg-gray-900 rounded-xl border border-gray-700 w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl"
+            className="bg-white rounded-xl border border-gray-200 w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 shrink-0">
-              <span className="text-white font-medium text-sm">{preview.name}</span>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 shrink-0">
+              <span className="text-gray-900 font-medium text-sm">{preview.name}</span>
               <button
                 onClick={() => setPreview(null)}
-                className="text-gray-400 hover:text-white text-xl leading-none"
+                className="text-gray-400 hover:text-gray-900 text-xl leading-none"
               >
                 ×
               </button>
@@ -147,10 +147,10 @@ export function TemplatePickerModal({ onClose }: Props) {
               className="flex-1 min-h-[65vh] rounded-b-xl"
               title={`Preview — ${preview.name}`}
             />
-            <div className="px-5 py-3 border-t border-gray-800 flex justify-end gap-2 shrink-0">
+            <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2 shrink-0">
               <button
                 onClick={() => setPreview(null)}
-                className="text-sm text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
               >
                 Back
               </button>

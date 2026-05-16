@@ -45,13 +45,13 @@ export default function MyResumes() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">My Resumes</h1>
-          <p className="text-gray-400 text-sm">Base resumes you can tailor for specific jobs.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">My Resumes</h1>
+          <p className="text-gray-500 text-sm">Base resumes you can tailor for specific jobs.</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setShowTemplatePicker(true)}
-            className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg px-4 py-2 transition-colors"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg px-4 py-2 transition-colors"
           >
             From template
           </button>
@@ -67,12 +67,12 @@ export default function MyResumes() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-gray-900 rounded-xl border border-gray-800 h-40 animate-pulse" />
+            <div key={i} className="bg-gray-200 rounded-xl border border-gray-200 h-40 animate-pulse" />
           ))}
         </div>
       ) : resumes.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-500 mb-6">No resumes yet.</p>
+          <p className="text-gray-400 mb-6">No resumes yet.</p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => setShowTemplatePicker(true)}
@@ -82,7 +82,7 @@ export default function MyResumes() {
             </button>
             <button
               onClick={() => navigate("/resumes/new")}
-              className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg px-5 py-2.5 transition-colors"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg px-5 py-2.5 transition-colors"
             >
               Upload .tex file
             </button>
@@ -93,15 +93,15 @@ export default function MyResumes() {
           {resumes.map((r) => (
             <div
               key={r.id}
-              className="bg-gray-900 rounded-xl border border-gray-800 p-5 flex flex-col gap-3 hover:border-gray-600 transition-colors"
+              className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3 hover:border-gray-300 transition-colors shadow-sm"
             >
               <div className="flex items-start justify-between gap-2">
-                <h3 className="text-white font-semibold truncate">{r.label}</h3>
-                <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded shrink-0">
+                <h3 className="text-gray-900 font-semibold truncate">{r.label}</h3>
+                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded shrink-0">
                   {sourceLabel(r)}
                 </span>
               </div>
-              <p className="text-gray-500 text-xs">
+              <p className="text-gray-400 text-xs">
                 {r.variant_count} variant{r.variant_count !== 1 ? "s" : ""} ·{" "}
                 Updated {new Date(r.updated_at).toLocaleDateString()}
               </p>
@@ -114,14 +114,14 @@ export default function MyResumes() {
                 </button>
                 <button
                   onClick={() => setPreviewId(r.id)}
-                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg px-3 py-1.5 transition-colors"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg px-3 py-1.5 transition-colors"
                 >
                   Preview
                 </button>
                 <button
                   onClick={() => handleDelete(r.id)}
                   disabled={deleting === r.id}
-                  className="bg-gray-800 hover:bg-red-900/40 text-gray-500 hover:text-red-400 text-sm rounded-lg px-3 py-1.5 transition-colors"
+                  className="bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-600 text-sm rounded-lg px-3 py-1.5 transition-colors"
                 >
                   {deleting === r.id ? "…" : "Delete"}
                 </button>
@@ -134,18 +134,18 @@ export default function MyResumes() {
       {/* PDF preview modal */}
       {previewId && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6"
           onClick={() => setPreviewId(null)}
         >
           <div
-            className="bg-gray-900 rounded-xl border border-gray-700 w-full max-w-3xl max-h-[90vh] flex flex-col"
+            className="bg-white rounded-xl border border-gray-200 w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
-              <span className="text-white font-medium">PDF Preview</span>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <span className="text-gray-900 font-medium">PDF Preview</span>
               <button
                 onClick={() => setPreviewId(null)}
-                className="text-gray-400 hover:text-white text-xl"
+                className="text-gray-400 hover:text-gray-900 text-xl"
               >
                 ×
               </button>

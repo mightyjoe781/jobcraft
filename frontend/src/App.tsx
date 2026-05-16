@@ -3,6 +3,7 @@ import AppLayout from "./components/AppLayout";
 import { RequireAuth } from "./components/RequireAuth";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import LandingPage from "./pages/landing/LandingPage";
 import ComingSoonPage from "./pages/coming-soon/ComingSoonPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ResumesPage from "./pages/resumes/ResumesPage";
@@ -10,11 +11,18 @@ import ResumeEditor from "./pages/resumes/ResumeEditor";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ApplicationsPage from "./pages/applications/ApplicationsPage";
 import ApplyPage from "./pages/apply/ApplyPage";
+import { useAuth } from "./hooks/useAuth";
 
+function RootRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? <Navigate to="/dashboard" replace /> : <LandingPage />;
+}
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 

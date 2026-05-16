@@ -42,9 +42,9 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-60 min-h-screen bg-sidebar flex flex-col border-r border-gray-800">
-      <div className="px-5 py-5 border-b border-gray-800">
-        <span className="text-white font-bold text-lg tracking-tight">JobCraft</span>
+    <aside className="w-60 min-h-screen bg-sidebar flex flex-col border-r border-gray-200">
+      <div className="px-5 py-5 border-b border-gray-200">
+        <span className="text-gray-900 font-bold text-lg tracking-tight">JobCraft</span>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
@@ -53,10 +53,10 @@ export default function Sidebar() {
             <button
               key={item.to}
               onClick={() => alert("Coming soon — this feature is in development")}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-500 cursor-not-allowed text-sm"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed text-sm"
             >
               <span>{item.label}</span>
-              <span className="text-xs bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">
+              <span className="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">
                 Soon
               </span>
             </button>
@@ -69,19 +69,19 @@ export default function Sidebar() {
                   return `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                     isActive
                       ? "bg-accent text-white"
-                      : "bg-accent/20 text-accent hover:bg-accent/30"
+                      : "bg-accent/10 text-accent hover:bg-accent/20"
                   }`;
                 }
                 return `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? "bg-sidebar-active text-white"
-                    : "text-gray-400 hover:bg-sidebar-hover hover:text-white"
+                    ? "bg-sidebar-active text-indigo-700"
+                    : "text-gray-600 hover:bg-sidebar-hover hover:text-gray-900"
                 }`;
               }}
             >
               <span>{item.label}</span>
               {item.badge && (
-                <span className="text-xs bg-indigo-900/50 text-indigo-400 px-1.5 py-0.5 rounded">
+                <span className="text-xs bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded">
                   {item.badge}
                 </span>
               )}
@@ -90,14 +90,14 @@ export default function Sidebar() {
         )}
       </nav>
 
-      <div className="px-3 py-4 border-t border-gray-800 space-y-1">
+      <div className="px-3 py-4 border-t border-gray-200 space-y-1">
         <NavLink
           to="/profile"
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
               isActive
-                ? "bg-sidebar-active text-white"
-                : "text-gray-400 hover:bg-sidebar-hover hover:text-white"
+                ? "bg-sidebar-active text-indigo-700"
+                : "text-gray-600 hover:bg-sidebar-hover hover:text-gray-900"
             }`
           }
         >
@@ -106,7 +106,7 @@ export default function Sidebar() {
         </NavLink>
         <button
           onClick={handleSignOut}
-          className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-400 hover:bg-sidebar-hover transition-colors"
+          className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-red-600 hover:bg-sidebar-hover transition-colors"
         >
           Sign out
         </button>

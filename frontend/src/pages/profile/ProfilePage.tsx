@@ -75,41 +75,41 @@ export default function ProfilePage() {
 
   return (
     <div className="p-8 max-w-2xl">
-      <h1 className="text-2xl font-bold text-white mb-8">Profile</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Profile</h1>
 
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
         <div className="flex items-center gap-4 mb-6">
           <Avatar name={user.display_name} />
           <div>
-            <p className="text-white font-semibold text-lg">{user.display_name}</p>
-            <p className="text-gray-400 text-sm">{user.email}</p>
+            <p className="text-gray-900 font-semibold text-lg">{user.display_name}</p>
+            <p className="text-gray-500 text-sm">{user.email}</p>
           </div>
         </div>
 
         <form onSubmit={handleSave} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Display name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Display name</label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
             <input
               type="email"
               value={user.email}
               disabled
-              className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-500 cursor-not-allowed"
+              className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2.5 text-gray-400 cursor-not-allowed"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Default tailoring preference
             </label>
             <div className="space-y-2">
@@ -118,8 +118,8 @@ export default function ProfilePage() {
                   key={opt.value}
                   className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                     preference === opt.value
-                      ? "border-accent bg-accent/10"
-                      : "border-gray-700 hover:border-gray-600"
+                      ? "border-accent bg-indigo-50"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <input
@@ -128,11 +128,11 @@ export default function ProfilePage() {
                     value={opt.value}
                     checked={preference === opt.value}
                     onChange={() => setPreference(opt.value)}
-                    className="mt-0.5 accent-[#6366f1]"
+                    className="mt-0.5 accent-[#4f46e5]"
                   />
                   <div>
-                    <p className="text-white text-sm font-medium">{opt.label}</p>
-                    <p className="text-gray-400 text-xs">{opt.description}</p>
+                    <p className="text-gray-900 text-sm font-medium">{opt.label}</p>
+                    <p className="text-gray-500 text-xs">{opt.description}</p>
                   </div>
                 </label>
               ))}
@@ -149,32 +149,32 @@ export default function ProfilePage() {
         </form>
       </div>
 
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 mb-6">
-        <h2 className="text-gray-300 font-medium mb-3">Linked accounts</h2>
-        <div className="flex items-center justify-between p-3 rounded-lg border border-gray-700">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+        <h2 className="text-gray-700 font-medium mb-3">Linked accounts</h2>
+        <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-5 h-5 bg-gray-700 rounded" />
-            <span className="text-gray-400 text-sm">Google OAuth</span>
+            <div className="w-5 h-5 bg-gray-200 rounded" />
+            <span className="text-gray-500 text-sm">Google OAuth</span>
           </div>
-          <span className="text-xs text-gray-600 bg-gray-800 px-2 py-0.5 rounded">Coming soon</span>
+          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Coming soon</span>
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-xl border border-red-900/40 p-6">
-        <h2 className="text-red-400 font-medium mb-2">Danger zone</h2>
-        <p className="text-gray-400 text-sm mb-4">
+      <div className="bg-white rounded-xl border border-red-200 p-6 shadow-sm">
+        <h2 className="text-red-600 font-medium mb-2">Danger zone</h2>
+        <p className="text-gray-500 text-sm mb-4">
           Permanently delete your account and all associated data. This action cannot be undone.
         </p>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">
-              Type <span className="font-mono text-red-400">DELETE</span> to confirm
+            <label className="block text-sm text-gray-500 mb-1.5">
+              Type <span className="font-mono text-red-600">DELETE</span> to confirm
             </label>
             <input
               type="text"
               value={deleteConfirm}
               onChange={(e) => setDeleteConfirm(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-700"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="DELETE"
             />
           </div>

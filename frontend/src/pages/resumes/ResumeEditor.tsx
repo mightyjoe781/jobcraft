@@ -171,22 +171,22 @@ export default function ResumeEditor() {
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 px-5 py-3 bg-gray-900 border-b border-gray-800 shrink-0">
+      <div className="flex items-center gap-3 px-5 py-3 bg-white border-b border-gray-200 shrink-0">
         <input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Resume label (e.g. SDE, Data Engineer)"
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm w-56 focus:outline-none focus:ring-1 focus:ring-accent"
+          className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-gray-900 text-sm w-56 focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <span
           className={`text-xs ${
             saveStatus === "saved"
-              ? "text-gray-500"
+              ? "text-gray-400"
               : saveStatus === "unsaved"
-              ? "text-yellow-400"
+              ? "text-yellow-600"
               : saveStatus === "error"
-              ? "text-red-400"
-              : "text-gray-400"
+              ? "text-red-600"
+              : "text-gray-500"
           }`}
         >
           {saveStatusLabel[saveStatus]}
@@ -194,26 +194,26 @@ export default function ResumeEditor() {
         <div className="flex-1" />
         <button
           onClick={() => setShowAiFill(true)}
-          className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+          className="text-sm text-indigo-600 hover:text-indigo-700 transition-colors"
         >
           AI Fill
         </button>
         <button
           onClick={() => setShowSections(!showSections)}
-          className="text-sm text-gray-400 hover:text-white transition-colors"
+          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           Sections
         </button>
         <button
           onClick={() => setShowHistory(!showHistory)}
-          className="text-sm text-gray-400 hover:text-white transition-colors"
+          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           History
         </button>
         <button
           onClick={handleRender}
           disabled={rendering}
-          className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white text-sm rounded-lg px-4 py-1.5 transition-colors"
+          className="bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-900 text-sm rounded-lg px-4 py-1.5 transition-colors"
         >
           {rendering ? "Rendering…" : "Render Preview"}
         </button>
@@ -228,12 +228,12 @@ export default function ResumeEditor() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sections nav */}
         {showSections && sections.length > 0 && (
-          <div className="w-44 bg-gray-900 border-r border-gray-800 p-3 overflow-y-auto">
-            <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide">Sections</p>
+          <div className="w-44 bg-white border-r border-gray-200 p-3 overflow-y-auto">
+            <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Sections</p>
             {sections.map((s, i) => (
               <button
                 key={i}
-                className="block w-full text-left text-sm text-gray-400 hover:text-white py-1 px-2 rounded hover:bg-gray-800 transition-colors"
+                className="block w-full text-left text-sm text-gray-500 hover:text-gray-900 py-1 px-2 rounded hover:bg-gray-100 transition-colors"
               >
                 {s}
               </button>
@@ -246,7 +246,7 @@ export default function ResumeEditor() {
           <Editor
             height="100%"
             language="latex"
-            theme="vs-dark"
+            theme="light"
             value={tex}
             onChange={handleEditorChange}
             options={{
@@ -258,24 +258,24 @@ export default function ResumeEditor() {
             }}
           />
           {compileError && (
-            <details className="bg-red-950 border-t border-red-800 p-3 text-xs text-red-300 max-h-36 overflow-auto">
+            <details className="bg-red-50 border-t border-red-200 p-3 text-xs text-red-700 max-h-36 overflow-auto">
               <summary className="cursor-pointer font-medium mb-1">
                 LaTeX compile errors ({compileError.errors.length})
               </summary>
               {compileError.errors.map((e, i) => (
                 <div key={i} className="font-mono">{e}</div>
               ))}
-              <pre className="mt-2 text-gray-400 whitespace-pre-wrap">{compileError.raw_output}</pre>
+              <pre className="mt-2 text-gray-500 whitespace-pre-wrap">{compileError.raw_output}</pre>
             </details>
           )}
         </div>
 
         {/* PDF preview */}
-        <div className="w-[48%] bg-gray-950 border-l border-gray-800 flex items-center justify-center">
+        <div className="w-[48%] bg-gray-50 border-l border-gray-200 flex items-center justify-center">
           {pdfApiPath ? (
             <PdfViewer apiPath={pdfApiPath} className="w-full h-full" title="PDF preview" />
           ) : (
-            <div className="text-center text-gray-600">
+            <div className="text-center text-gray-400">
               <p className="text-sm">Click "Render Preview" to compile your LaTeX</p>
             </div>
           )}
@@ -284,22 +284,22 @@ export default function ResumeEditor() {
 
       {/* History panel */}
       {showHistory && (
-        <div className="absolute right-[48%] top-16 w-64 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-40 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
-            <span className="text-white text-sm font-medium">Save history</span>
-            <button onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-white">×</button>
+        <div className="absolute right-[48%] top-16 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl z-40 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <span className="text-gray-900 text-sm font-medium">Save history</span>
+            <button onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-gray-900">×</button>
           </div>
           <div className="max-h-80 overflow-y-auto">
             {snapshots.length === 0 ? (
-              <p className="text-gray-500 text-sm px-4 py-3">No snapshots yet. Use Ctrl+S to save.</p>
+              <p className="text-gray-400 text-sm px-4 py-3">No snapshots yet. Use Ctrl+S to save.</p>
             ) : (
               snapshots.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => handleRestoreSnapshot(s.id)}
-                  className="w-full text-left px-4 py-2.5 hover:bg-gray-800 transition-colors border-b border-gray-800/50"
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors border-b border-gray-100"
                 >
-                  <p className="text-white text-sm">
+                  <p className="text-gray-900 text-sm">
                     {new Date(s.saved_at).toLocaleDateString()}{" "}
                     {new Date(s.saved_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
@@ -312,14 +312,14 @@ export default function ResumeEditor() {
 
       {/* AI Fill drawer */}
       {showAiFill && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6">
-          <div className="bg-gray-900 rounded-xl border border-gray-700 w-full max-w-lg shadow-2xl">
-            <div className="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
-              <h2 className="text-white font-medium">AI Fill — paste your background</h2>
-              <button onClick={() => setShowAiFill(false)} className="text-gray-400 hover:text-white">×</button>
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-xl border border-gray-200 w-full max-w-lg shadow-2xl">
+            <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-gray-900 font-medium">AI Fill — paste your background</h2>
+              <button onClick={() => setShowAiFill(false)} className="text-gray-400 hover:text-gray-900">×</button>
             </div>
             <div className="p-5 space-y-4">
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-500 text-sm">
                 Paste your LinkedIn bio, old resume text, or a freeform description of your experience.
                 Claude will fill in the template placeholders — it won't invent anything.
               </p>
@@ -327,13 +327,13 @@ export default function ResumeEditor() {
                 value={bgText}
                 onChange={(e) => setBgText(e.target.value)}
                 rows={8}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="10+ years as a backend engineer at Stripe and Shopify, specialised in payments infrastructure..."
               />
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setShowAiFill(false)}
-                  className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Cancel
                 </button>
