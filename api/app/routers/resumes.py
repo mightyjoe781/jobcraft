@@ -523,6 +523,9 @@ async def delete_variant(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    from sqlalchemy import update as sa_update
+    from app.models.application import Application
+
     result = await db.execute(
         select(ResumeVariant).where(
             ResumeVariant.id == variant_id, ResumeVariant.user_id == current_user.id
@@ -531,5 +534,12 @@ async def delete_variant(
     variant = result.scalar_one_or_none()
     if not variant:
         raise HTTPException(status_code=404, detail="Variant not found")
+
+    # Null FK in applications before deleting to avoid constraint violation
+    await db.execute(
+        sa_update(Application)
+        .where(Application.resume_variant_id == variant_id)
+        .values(resume_variant_id=None)
+    )
     await db.delete(variant)
     await db.commit()
