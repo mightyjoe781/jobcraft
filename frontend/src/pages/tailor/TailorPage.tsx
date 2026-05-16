@@ -107,12 +107,38 @@ export default function TailorPage() {
         es.close();
       });
 
-      es.onerror = () => {
-        if (!pdfReady) {
-          setError("Lost connection to server");
-          setStreaming(false);
-        }
+      es.onerror = async () => {
         es.close();
+        if (pdfReady) return; // already done, ignore
+        setStreaming(false);
+
+        // SSE dropped — worker may still be running in the background.
+        // Poll the variant to see if it completed.
+        const id = res.variant_id;
+        let attempts = 0;
+        const check = setInterval(async () => {
+          attempts++;
+          try {
+            const { getAccessToken } = await import("../../api/client");
+            const token = getAccessToken();
+            const r = await fetch(`/api/resumes/variants/${id}`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (r.ok) {
+              const variant = await r.json();
+              if (variant.pdf_path) {
+                clearInterval(check);
+                setVariantId(id);
+                setPdfReady(true);
+                return;
+              }
+            }
+          } catch { /* ignore */ }
+          if (attempts >= 12) { // ~60s total
+            clearInterval(check);
+            setError("Connection dropped — tailoring may still be running. Check Applications in a moment.");
+          }
+        }, 5000);
       };
     } catch (err: unknown) {
       const e = err as { message?: string };
