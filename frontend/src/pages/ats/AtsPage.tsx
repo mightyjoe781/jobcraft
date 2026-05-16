@@ -131,7 +131,7 @@ function ScoreResult({ score }: { score: AtsScore }) {
             </p>
           </div>
           <Link
-            to="/skill-gaps"
+            to="/analyze?tab=skill-gaps"
             className="shrink-0 bg-accent hover:bg-accent-hover text-white text-sm rounded-lg px-4 py-2 transition-colors"
           >
             Analyze skill gaps →

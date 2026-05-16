@@ -149,7 +149,7 @@ export default function TailorPage() {
               Score ATS
             </button>
             <button
-              onClick={() => navigate("/skill-gaps")}
+              onClick={() => navigate("/analyze?tab=skill-gaps")}
               className="block w-full bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg py-2.5 text-center transition-colors"
             >
               Skill gap analysis
@@ -207,7 +207,7 @@ export default function TailorPage() {
             {bases.length === 0 ? (
               <p className="text-sm text-gray-500">
                 No base resumes yet.{" "}
-                <a href="/resumes/my" className="text-accent hover:underline">Create one first.</a>
+                <a href="/resumes" className="text-accent hover:underline">Create one first.</a>
               </p>
             ) : (
               <select

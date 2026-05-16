@@ -5,12 +5,10 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ComingSoonPage from "./pages/coming-soon/ComingSoonPage";
 import ProfilePage from "./pages/profile/ProfilePage";
-import MyResumes from "./pages/resumes/MyResumes";
+import ResumesPage from "./pages/resumes/ResumesPage";
 import ResumeEditor from "./pages/resumes/ResumeEditor";
-import VariantHistory from "./pages/resumes/VariantHistory";
 import TailorPage from "./pages/tailor/TailorPage";
-import AtsPage from "./pages/ats/AtsPage";
-import SkillGapsPage from "./pages/skill-gaps/SkillGapsPage";
+import AnalyzePage from "./pages/analyze/AnalyzePage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import CoverLettersPage from "./pages/cover-letters/CoverLettersPage";
 
@@ -37,26 +35,28 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
 
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardPage />
-          }
-        />
-
-        <Route path="/resumes/templates" element={<Navigate to="/resumes/my" replace />} />
-        <Route path="/resumes/my" element={<MyResumes />} />
+        {/* Resumes — tabbed: My Resumes | Variants */}
+        <Route path="/resumes" element={<ResumesPage />} />
         <Route path="/resumes/new" element={<ResumeEditor />} />
         <Route path="/resumes/editor/:id" element={<ResumeEditor />} />
-        <Route path="/resumes/variants" element={<VariantHistory />} />
+
+        {/* Legacy redirects so old bookmarks/links don't 404 */}
+        <Route path="/resumes/my" element={<Navigate to="/resumes" replace />} />
+        <Route path="/resumes/templates" element={<Navigate to="/resumes" replace />} />
+        <Route path="/resumes/variants" element={<Navigate to="/resumes?tab=variants" replace />} />
+        <Route path="/ats" element={<Navigate to="/analyze" replace />} />
+        <Route path="/skill-gaps" element={<Navigate to="/analyze?tab=skill-gaps" replace />} />
 
         <Route path="/tailor" element={<TailorPage />} />
-        <Route path="/ats" element={<AtsPage />} />
-        <Route path="/applications" element={<PlaceholderPage title="Applications" />} />
+
+        {/* Analyze — tabbed: ATS Score | Skill Gaps */}
+        <Route path="/analyze" element={<AnalyzePage />} />
 
         <Route path="/cover-letters" element={<CoverLettersPage />} />
-        <Route path="/skill-gaps" element={<SkillGapsPage />} />
+        <Route path="/applications" element={<PlaceholderPage title="Applications" />} />
+
         <Route
           path="/auto-apply"
           element={
@@ -79,7 +79,7 @@ export default function App() {
         />
 
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="*" element={<Navigate to="/resumes/my" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
   );

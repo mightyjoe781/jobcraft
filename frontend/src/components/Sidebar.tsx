@@ -10,13 +10,11 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/dashboard" },
-  { label: "My Resumes", to: "/resumes/my" },
-  { label: "Variants", to: "/resumes/variants" },
+  { label: "Resumes", to: "/resumes" },
   { label: "Tailor Resume", to: "/tailor" },
-  { label: "ATS Score", to: "/ats" },
-  { label: "Applications", to: "/applications" },
+  { label: "Analyze", to: "/analyze" },
   { label: "Cover Letters", to: "/cover-letters" },
-  { label: "Skill Gaps", to: "/skill-gaps" },
+  { label: "Applications", to: "/applications" },
   { label: "Auto-Apply", to: "/auto-apply", locked: true },
   { label: "Discover Jobs", to: "/discover", locked: true },
 ];

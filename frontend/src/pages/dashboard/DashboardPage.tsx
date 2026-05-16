@@ -51,7 +51,7 @@ function AtsScoreGauge({ score }: { score: number | null }) {
     return (
       <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 flex flex-col items-center justify-center min-h-[160px]">
         <p className="text-gray-500 text-sm text-center">No ATS scores yet</p>
-        <Link to="/ats" className="text-accent text-sm hover:underline mt-2">Score a resume →</Link>
+        <Link to="/analyze" className="text-accent text-sm hover:underline mt-2">Score a resume →</Link>
       </div>
     );
   }
@@ -108,7 +108,7 @@ function KeywordsChart({ data }: { data: { term: string; count: number }[] }) {
       <EmptyPanel
         label="No keyword data yet. Score some resumes to see which skills you're missing most."
         cta="Score a resume"
-        to="/ats"
+        to="/analyze"
       />
     );
   }
@@ -143,7 +143,7 @@ function SkillGapProgress({ summary }: { summary: DashboardStats["skill_gap_summ
       <EmptyPanel
         label="No skill gaps tracked yet."
         cta="Run a skill gap analysis"
-        to="/skill-gaps"
+        to="/analyze?tab=skill-gaps"
       />
     );
   }
@@ -158,7 +158,7 @@ function SkillGapProgress({ summary }: { summary: DashboardStats["skill_gap_summ
     <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-gray-400 text-xs uppercase tracking-wide">Skill Gap Progress</p>
-        <Link to="/skill-gaps" className="text-accent text-xs hover:underline">View all →</Link>
+        <Link to="/analyze?tab=skill-gaps" className="text-accent text-xs hover:underline">View all →</Link>
       </div>
       <div className="flex items-end gap-1 h-16">
         {bars.map((b) =>
