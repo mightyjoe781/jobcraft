@@ -1,0 +1,67 @@
+%% JOBCRAFT template: ats-clean
+%% Category: engineering
+%% ATS-friendly: yes
+%% Sections: Summary, Experience, Skills, Education
+%% Placeholders: use %% JOBCRAFT: <field> comments to mark editable fields
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{10pt}{4pt}
+
+\begin{document}
+
+%% JOBCRAFT: full name
+\begin{center}
+  {\LARGE \textbf{Your Name}} \\[4pt]
+  %% JOBCRAFT: email | phone | location | linkedin url
+  your@email.com $\cdot$ +1 (555) 000-0000 $\cdot$ City, State $\cdot$
+  \href{https://linkedin.com/in/yourprofile}{linkedin.com/in/yourprofile}
+\end{center}
+
+\section{Summary}
+%% JOBCRAFT: 2-3 sentence professional summary
+A results-driven software engineer with X years of experience building scalable backend systems.
+Strong background in distributed systems and cloud infrastructure.
+
+\section{Experience}
+
+%% JOBCRAFT: most recent role
+\textbf{Software Engineer} \hfill \textit{Jan 2023 -- Present} \\
+\textit{Company Name, City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  %% JOBCRAFT: bullet points — lead with action verb, include metric where possible
+  \item Built and maintained RESTful APIs serving 10M+ requests per day
+  \item Reduced p99 latency by 40\% through query optimization and caching
+  \item Led a team of 3 engineers to deliver a major feature 2 weeks ahead of schedule
+\end{itemize}
+
+\vspace{4pt}
+%% JOBCRAFT: previous role
+\textbf{Junior Software Engineer} \hfill \textit{Jun 2021 -- Dec 2022} \\
+\textit{Previous Company, City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Developed microservices in Python and Go, deployed on Kubernetes
+  \item Wrote integration tests that increased code coverage from 60\% to 88\%
+\end{itemize}
+
+\section{Skills}
+%% JOBCRAFT: technical skills grouped by category
+\textbf{Languages:} Python, Go, TypeScript \\
+\textbf{Frameworks:} FastAPI, React, gRPC \\
+\textbf{Infrastructure:} AWS, Kubernetes, Terraform, PostgreSQL, Redis \\
+\textbf{Tools:} Git, Docker, GitHub Actions, Datadog
+
+\section{Education}
+%% JOBCRAFT: degree, institution, graduation year
+\textbf{B.S. Computer Science} \hfill \textit{May 2021} \\
+\textit{University Name, City, State} \\
+GPA: 3.8/4.0
+
+\end{document}

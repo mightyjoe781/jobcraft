@@ -1,0 +1,74 @@
+%% JOBCRAFT template: academic
+%% Category: research
+%% ATS-friendly: yes
+%% Sections: Education, Research, Publications, Teaching, Skills
+%% Placeholders: use %% JOBCRAFT: <field> comments to mark editable fields
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\titleformat{\section}{\normalsize\bfseries\uppercase}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{12pt}{4pt}
+
+\begin{document}
+
+%% JOBCRAFT: full name
+\begin{center}
+  {\Large \textbf{Your Name}} \\[4pt]
+  %% JOBCRAFT: institution | department | email | personal website
+  Department of Computer Science $\cdot$ University Name \\
+  your@university.edu $\cdot$ \href{https://yoursite.com}{yoursite.com}
+\end{center}
+
+\section{Education}
+%% JOBCRAFT: PhD / Masters info
+\textbf{Ph.D. Computer Science} \hfill \textit{Expected May 2026} \\
+University Name, City, State \\
+Advisor: Prof. Name \\
+Dissertation: \textit{Title of Your Dissertation}
+
+\vspace{4pt}
+\textbf{B.S. Computer Science} \hfill \textit{May 2021} \\
+University Name, City, State \\
+GPA: 3.95/4.0, Summa Cum Laude
+
+\section{Research Interests}
+%% JOBCRAFT: 2-4 research areas
+Machine Learning, Natural Language Processing, Distributed Systems, Human-Computer Interaction
+
+\section{Publications}
+%% JOBCRAFT: publications in reverse chronological order
+\begin{enumerate}[leftmargin=*, noitemsep, topsep=2pt]
+  \item \textbf{Your Name}, Co-author Name. ``Title of Paper.'' \textit{Conference/Journal Name}, 2024. \href{https://arxiv.org/abs/xxxx}{[arxiv]}
+  \item \textbf{Your Name}, Co-author Name. ``Title of Paper.'' \textit{Workshop Name @ NeurIPS}, 2023.
+\end{enumerate}
+
+\section{Research Experience}
+%% JOBCRAFT: research positions
+\textbf{Graduate Research Assistant} \hfill \textit{Aug 2021 -- Present} \\
+\textit{Lab Name, University Name}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Developed a novel method for X achieving Y improvement on Z benchmark
+  \item Supervised 2 undergraduate research assistants
+\end{itemize}
+
+\section{Teaching}
+%% JOBCRAFT: TA roles
+\textbf{Teaching Assistant} — CS 101: Introduction to Programming \hfill \textit{Fall 2022} \\
+University Name \\
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Led weekly discussion sections of 30 students; received 4.8/5.0 teaching evaluation
+\end{itemize}
+
+\section{Skills}
+%% JOBCRAFT: technical skills
+\textbf{Programming:} Python, R, Julia, MATLAB, C++ \\
+\textbf{ML Frameworks:} PyTorch, JAX, Hugging Face Transformers \\
+\textbf{Tools:} LaTeX, Git, SLURM, Docker
+
+\end{document}

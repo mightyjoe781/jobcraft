@@ -1,0 +1,104 @@
+# Environment — never commit real secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+venv/
+ENV/
+env/
+.venv
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+*.tsbuildinfo
+coverage/
+.turbo/
+
+# Docker
+docker-compose.override.yml
+.docker/
+postgres_data/
+
+# Docker volumes (if mapped locally)
+storage/
+/storage
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+
+# Windows
+Thumbs.db
+*.stackdump
+[Dd]esktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+*.c9/
+*.iws
+*.sublime-workspace
+
+# OS
+.directory
+
+# Testing
+.nyc_output/
+coverage/
+
+# Misc
+.DS_Store
+.AppleDouble
+.LSOverride
+._.DS_Store
+**/._.DS_Store
+.Spotlight-V100
+.Trashes
+._*

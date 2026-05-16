@@ -1,0 +1,74 @@
+%% JOBCRAFT template: ats-data
+%% Category: data
+%% ATS-friendly: yes
+%% Sections: Summary, Skills, Experience, Projects, Education
+%% Placeholders: use %% JOBCRAFT: <field> comments to mark editable fields
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{10pt}{4pt}
+
+\begin{document}
+
+%% JOBCRAFT: full name
+\begin{center}
+  {\LARGE \textbf{Your Name}} \\[4pt]
+  %% JOBCRAFT: email | phone | location | linkedin | github
+  your@email.com $\cdot$ +1 (555) 000-0000 $\cdot$ City, State $\cdot$
+  \href{https://linkedin.com/in/yourprofile}{LinkedIn} $\cdot$
+  \href{https://github.com/yourhandle}{GitHub}
+\end{center}
+
+\section{Skills}
+%% JOBCRAFT: technical skills — put most relevant to data roles first
+\textbf{Languages:} Python, SQL, Scala, R \\
+\textbf{Data Frameworks:} Spark, dbt, Airflow, Kafka, Flink \\
+\textbf{Databases:} PostgreSQL, Snowflake, BigQuery, Redshift, MongoDB \\
+\textbf{Cloud \& Infra:} AWS (S3, Glue, EMR), GCP, Terraform, Docker \\
+\textbf{ML \& Analytics:} Pandas, NumPy, Scikit-learn, Tableau, Looker
+
+\section{Experience}
+
+%% JOBCRAFT: most recent data role
+\textbf{Senior Data Engineer} \hfill \textit{Mar 2022 -- Present} \\
+\textit{Company Name, City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  %% JOBCRAFT: bullets — emphasize pipeline scale, data volume, business impact
+  \item Designed and maintained ELT pipelines processing 2TB of raw data daily using Spark and dbt
+  \item Reduced pipeline run time by 35\% by migrating batch jobs to incremental models
+  \item Built real-time streaming ingestion layer with Kafka and Flink for sub-second dashboards
+  \item Partnered with analytics team to build self-serve data models used by 50+ stakeholders
+\end{itemize}
+
+\vspace{4pt}
+%% JOBCRAFT: previous data role
+\textbf{Data Engineer} \hfill \textit{Jul 2020 -- Feb 2022} \\
+\textit{Previous Company, City, State}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Built ETL workflows in Airflow orchestrating 200+ DAGs across data warehouse migrations
+  \item Implemented data quality checks that reduced reporting errors by 60\%
+\end{itemize}
+
+\section{Projects}
+%% JOBCRAFT: 1-2 notable personal or open source projects
+\textbf{Open Source Contribution — dbt Package} \\
+\textit{github.com/yourhandle/project}
+\begin{itemize}[leftmargin=*, noitemsep, topsep=2pt]
+  \item Developed a dbt audit package with 500+ GitHub stars used by teams at Stripe and Shopify
+\end{itemize}
+
+\section{Education}
+%% JOBCRAFT: degree
+\textbf{M.S. Data Science} \hfill \textit{May 2020} \\
+\textit{University Name} \\
+\textbf{B.S. Statistics} \hfill \textit{May 2018} \\
+\textit{University Name}
+
+\end{document}

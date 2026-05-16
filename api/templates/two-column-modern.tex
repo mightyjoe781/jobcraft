@@ -1,0 +1,102 @@
+%% JOBCRAFT template: two-column-modern
+%% Category: general
+%% ATS-friendly: no (two-column layout may confuse some ATS parsers)
+%% Sections: Contact/Skills (left), Summary/Experience/Education (right)
+%% Placeholders: use %% JOBCRAFT: <field> comments to mark editable fields
+
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+
+\definecolor{sidebarcolor}{HTML}{2D3748}
+\definecolor{accentcolor}{HTML}{4A90D9}
+
+\begin{document}
+
+\noindent
+\begin{minipage}[t]{0.3\textwidth}
+\colorbox{sidebarcolor}{\begin{minipage}[t][\textheight][t]{\textwidth}
+\color{white}
+\vspace{12pt}
+\hspace{8pt}
+
+%% JOBCRAFT: full name (sidebar)
+{\large \textbf{Your Name}}
+
+\vspace{8pt}
+\hspace{8pt}
+%% JOBCRAFT: job title / role
+{\small Software Engineer}
+
+\vspace{16pt}
+\hspace{8pt}{\small \textbf{CONTACT}}
+
+\vspace{4pt}
+\hspace{8pt}
+%% JOBCRAFT: contact details
+{\footnotesize
+your@email.com \\
+\hspace{8pt}+1 (555) 000-0000 \\
+\hspace{8pt}City, State \\
+\hspace{8pt}\href{https://linkedin.com/in/you}{linkedin.com/in/you}
+}
+
+\vspace{16pt}
+\hspace{8pt}{\small \textbf{SKILLS}}
+
+\vspace{4pt}
+\hspace{8pt}
+%% JOBCRAFT: top skills list
+{\footnotesize
+Python \\
+\hspace{8pt}TypeScript \\
+\hspace{8pt}SQL \\
+\hspace{8pt}AWS \\
+\hspace{8pt}Docker \\
+\hspace{8pt}Kubernetes
+}
+
+\end{minipage}}
+\end{minipage}%
+\begin{minipage}[t]{0.7\textwidth}
+\vspace{12pt}
+\hspace{12pt}
+
+%% JOBCRAFT: professional summary
+{\small A motivated software engineer with X years of experience delivering production-grade systems.}
+
+\vspace{10pt}
+\hspace{12pt}{\normalsize \textbf{EXPERIENCE}}
+\noindent\hspace{12pt}\rule{0.88\textwidth}{0.3pt}
+
+\vspace{4pt}
+\hspace{12pt}
+%% JOBCRAFT: role 1
+\begin{minipage}{0.88\textwidth}
+\textbf{Senior Engineer} \hfill \textit{2022 -- Present} \\
+{\small Company Name}
+\begin{itemize}[leftmargin=1em, noitemsep, topsep=2pt]
+  \item {\small Delivered X feature used by N users, improving Y by Z\%}
+\end{itemize}
+\end{minipage}
+
+\vspace{10pt}
+\hspace{12pt}{\normalsize \textbf{EDUCATION}}
+\noindent\hspace{12pt}\rule{0.88\textwidth}{0.3pt}
+
+\vspace{4pt}
+\hspace{12pt}
+%% JOBCRAFT: education
+\begin{minipage}{0.88\textwidth}
+\textbf{B.S. Computer Science} \hfill \textit{2021} \\
+{\small University Name}
+\end{minipage}
+
+\end{minipage}
+
+\end{document}
