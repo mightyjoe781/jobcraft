@@ -56,7 +56,6 @@ function UserStatsPanel({ user, onClose }: { user: AdminUser; onClose: () => voi
             <h3 className="text-gray-900 font-semibold text-base">{user.display_name}</h3>
             <p className="text-gray-400 text-sm">{user.email}</p>
             <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{user.plan}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${user.is_disabled ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
                 {user.is_disabled ? "Disabled" : "Active"}
               </span>
@@ -279,7 +278,7 @@ function UsersTab() {
             <tr>
               <th className="px-4 py-3 text-left">User</th>
               <th className="px-4 py-3 text-left">Joined</th>
-              <th className="px-4 py-3 text-left">Plan</th>
+
               <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
@@ -300,7 +299,6 @@ function UsersTab() {
                     {new Date(u.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{u.plan}</span>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${u.is_disabled ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
@@ -344,12 +342,9 @@ export default function AdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center gap-3 mb-6">
-        <span className="text-lg">🛡</span>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-400 text-sm">Manage users and registration access.</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+        <p className="text-gray-400 text-sm">Manage users and registration access.</p>
       </div>
 
       <div className="flex gap-1 border-b border-gray-200 mb-6">

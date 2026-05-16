@@ -100,18 +100,14 @@ export default function Sidebar() {
           <NavLink
             to="/admin"
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
+              `flex items-center px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
                 isActive
-                  ? "bg-amber-50 text-amber-800 border border-amber-200"
-                  : "text-amber-700 hover:bg-amber-50 hover:text-amber-900"
+                  ? "bg-sidebar-active text-indigo-700"
+                  : "text-gray-600 hover:bg-sidebar-hover hover:text-gray-900"
               }`
             }
           >
-            <span className="flex items-center gap-2">
-              <span className="text-xs">🛡</span>
-              User Management
-            </span>
-            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">Admin</span>
+            User Management
           </NavLink>
         )}
 
