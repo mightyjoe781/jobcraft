@@ -291,10 +291,36 @@ export default function ApplyPage() {
         es.close();
       });
 
-      es.onerror = () => {
-        setTailorError("Lost connection to server");
-        setTailoring(false);
+      es.onerror = async () => {
         es.close();
+        setTailoring(false);
+
+        // nginx timed out but worker likely still running — poll variant
+        const id = res.variant_id;
+        let attempts = 0;
+        const check = setInterval(async () => {
+          attempts++;
+          try {
+            const { getAccessToken } = await import("../../api/client");
+            const t = getAccessToken();
+            const r = await fetch(`/api/resumes/variants/${id}`, {
+              headers: t ? { Authorization: `Bearer ${t}` } : {},
+            });
+            if (r.ok) {
+              const variant = await r.json();
+              if (variant.pdf_path) {
+                clearInterval(check);
+                setSteps((prev) => prev.map((s) => ({ ...s, done: true })));
+                setStep("result");
+                return;
+              }
+            }
+          } catch { /* ignore */ }
+          if (attempts >= 24) { // 2 min total
+            clearInterval(check);
+            setTailorError("Connection timed out — tailoring may still be running. Check Applications in a moment.");
+          }
+        }, 5000);
       };
     } catch (err: unknown) {
       const e = err as { message?: string };
