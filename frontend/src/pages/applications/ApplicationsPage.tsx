@@ -903,7 +903,16 @@ export default function ApplicationsPage() {
     });
   }
 
-  const filteredApps = apps.filter((a) => !hiddenStatuses.has(a.status));
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredApps = apps.filter((a) => {
+    if (hiddenStatuses.has(a.status)) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return a.company.toLowerCase().includes(q) || a.role_title.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   // Clear selection when selected job is no longer visible due to filter
   const effectiveSelectedId = filteredApps.find((a) => a.id === selectedId) ? selectedId : null;
@@ -966,7 +975,15 @@ export default function ApplicationsPage() {
             </Link>
           </div>
 
-          {/* Row 2: filter */}
+          {/* Row 2: search */}
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search company or role…"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-900 text-xs placeholder-gray-400 focus:outline-none focus:bg-white focus:border-indigo-400 transition-colors mb-2"
+          />
+
+          {/* Row 3: filter */}
           <div className="relative">
             <button
               onClick={() => setShowFilter((v) => !v)}

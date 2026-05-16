@@ -130,9 +130,14 @@ function PipelineColumn({
           dragOver ? "bg-indigo-50 ring-2 ring-indigo-200" : ""
         }`}
       >
-        {apps.map((app) => (
+        {apps.slice(0, 5).map((app) => (
           <JobCard key={app.id} app={app} onDragStart={onDragStart} />
         ))}
+        {apps.length > 5 && (
+          <Link to="/applications" className="block text-center text-xs text-indigo-400 hover:underline py-2">
+            +{apps.length - 5} more
+          </Link>
+        )}
         {apps.length === 0 && !dragOver && (
           <div className="border border-dashed border-gray-200 rounded-lg h-16 flex items-center justify-center">
             <span className="text-gray-300 text-xs">Drop here</span>

@@ -211,7 +211,20 @@ async def delete_application(
     job_id = app.job_id
 
     if delete_variants:
-        # Delete ATS scores for this job's variants first (FK)
+        # 1. Null the FK on this application first so variants can be deleted
+        app.resume_variant_id = None
+        await db.flush()
+
+        # 2. Null resume_variant_id on any OTHER applications referencing same job variants
+        from sqlalchemy import update as sa_update
+        await db.execute(
+            sa_update(Application)
+            .where(Application.job_id == job_id, Application.user_id == current_user.id)
+            .values(resume_variant_id=None)
+        )
+        await db.flush()
+
+        # 3. Delete ATS scores for variants (FK order)
         variants_result = await db.execute(
             select(ResumeVariant.id).where(
                 ResumeVariant.job_id == job_id,
@@ -223,7 +236,8 @@ async def delete_application(
             await db.execute(
                 sa_delete(AtsScore).where(AtsScore.resume_variant_id.in_(variant_ids))
             )
-        # Delete variants
+
+        # 4. Delete variants
         await db.execute(
             sa_delete(ResumeVariant).where(
                 ResumeVariant.job_id == job_id,
