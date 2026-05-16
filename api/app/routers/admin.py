@@ -13,7 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.dependencies import get_admin_user
-from app.models.refresh_token import RefreshToken  # noqa: F401 — might not exist; use inline import
 from app.models.user import RefreshToken as RefreshTokenModel, User
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
