@@ -147,3 +147,59 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     await db.delete(user)
     await db.commit()
+
+@router.get("/users/{user_id}/stats")
+async def get_user_stats(
+    user_id: uuid.UUID,
+    _: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return usage stats for a user — shown when admin clicks a user row."""
+    from sqlalchemy import func
+    from app.models.resume import BaseResume, ResumeVariant
+    from app.models.job import Job
+    from app.models.application import Application
+    from app.models.ats import AtsScore
+    from app.models.skill_gap import SkillGap
+    from app.models.activity import ActivityLog
+
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    async def count(model, *filters):
+        result = await db.execute(select(func.count()).where(*filters))
+        return result.scalar_one()
+
+    base_resumes     = await count(BaseResume, BaseResume.user_id == user_id)
+    variants         = await count(ResumeVariant, ResumeVariant.user_id == user_id)
+    jobs_tracked     = await count(Job, Job.user_id == user_id)
+    applications     = await count(Application, Application.user_id == user_id)
+    ats_scores       = await count(AtsScore, AtsScore.user_id == user_id, AtsScore.status == "complete")
+    skill_gaps       = await count(SkillGap, SkillGap.user_id == user_id)
+
+    # AI calls this month
+    from datetime import datetime, timezone
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    ai_calls_month = await count(
+        ActivityLog,
+        ActivityLog.user_id == user_id,
+        ActivityLog.action == "tailored",
+        ActivityLog.created_at >= month_start,
+    )
+    ai_calls_total = await count(ActivityLog, ActivityLog.user_id == user_id, ActivityLog.action == "tailored")
+
+    return {
+        "user_id": str(user_id),
+        "display_name": user.display_name,
+        "email": user.email,
+        "base_resumes": base_resumes,
+        "resume_variants": variants,
+        "jobs_tracked": jobs_tracked,
+        "applications": applications,
+        "ats_scores": ats_scores,
+        "skill_gaps": skill_gaps,
+        "ai_tailor_runs_this_month": ai_calls_month,
+        "ai_tailor_runs_total": ai_calls_total,
+        "estimated_cost_usd": round(ai_calls_total * 0.04, 2),
+    }

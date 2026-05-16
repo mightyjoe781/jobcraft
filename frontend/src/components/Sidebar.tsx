@@ -32,7 +32,7 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-const ADMIN_NAV_ITEM: NavItem = { label: "Admin", to: "/admin" };
+// Admin nav item rendered separately, above user profile
 
 export default function Sidebar() {
   const { user, signOut } = useAuth();
@@ -50,7 +50,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-0.5">
-        {[...NAV_ITEMS, ...(user?.is_admin ? [ADMIN_NAV_ITEM] : [])].map((item) =>
+        {NAV_ITEMS.map((item) =>
           item.locked ? (
             <div key={item.to} className="relative group">
               <button
@@ -95,6 +95,26 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-200 space-y-1 shrink-0">
+        {/* User Management — elevated item, only for admin */}
+        {user?.is_admin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
+                isActive
+                  ? "bg-amber-50 text-amber-800 border border-amber-200"
+                  : "text-amber-700 hover:bg-amber-50 hover:text-amber-900"
+              }`
+            }
+          >
+            <span className="flex items-center gap-2">
+              <span className="text-xs">🛡</span>
+              User Management
+            </span>
+            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">Admin</span>
+          </NavLink>
+        )}
+
         <NavLink
           to="/profile"
           className={({ isActive }) =>

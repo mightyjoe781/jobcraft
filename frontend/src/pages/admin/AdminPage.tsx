@@ -2,7 +2,109 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import * as adminApi from "../../api/admin";
 import type { AdminUser, Invite } from "../../api/admin";
+import { apiFetch } from "../../api/client";
 import { ConfirmModal } from "../../components/ConfirmModal";
+
+// ── User stats panel ───────────────────────────────────────────────────────────
+
+interface UserStats {
+  display_name: string;
+  email: string;
+  base_resumes: number;
+  resume_variants: number;
+  jobs_tracked: number;
+  applications: number;
+  ats_scores: number;
+  skill_gaps: number;
+  ai_tailor_runs_this_month: number;
+  ai_tailor_runs_total: number;
+  estimated_cost_usd: number;
+}
+
+function StatRow({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+      <span className="text-gray-500 text-sm">{label}</span>
+      <div className="text-right">
+        <span className="text-gray-900 text-sm font-medium">{value}</span>
+        {sub && <p className="text-gray-400 text-xs">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+function UserStatsPanel({ user, onClose }: { user: AdminUser; onClose: () => void }) {
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiFetch<UserStats>(`/admin/users/${user.id}/stats`)
+      .then(setStats)
+      .finally(() => setLoading(false));
+  }, [user.id]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div
+        className="relative bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md mx-4 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-6 py-5 border-b border-gray-100">
+          <div>
+            <h3 className="text-gray-900 font-semibold text-base">{user.display_name}</h3>
+            <p className="text-gray-400 text-sm">{user.email}</p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{user.plan}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${user.is_disabled ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
+                {user.is_disabled ? "Disabled" : "Active"}
+              </span>
+              <span className="text-gray-300 text-xs">Joined {new Date(user.created_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 text-xl leading-none mt-0.5">×</button>
+        </div>
+
+        {/* Stats */}
+        <div className="px-6 py-4">
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-8 bg-gray-100 rounded animate-pulse" />
+              ))}
+            </div>
+          ) : stats ? (
+            <div className="space-y-0">
+              <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">Resumes</p>
+              <StatRow label="Base resumes" value={stats.base_resumes} />
+              <StatRow label="Tailored variants" value={stats.resume_variants} />
+
+              <p className="text-gray-400 text-xs uppercase tracking-wide mt-4 mb-2">Job Search</p>
+              <StatRow label="Jobs tracked" value={stats.jobs_tracked} />
+              <StatRow label="Applications" value={stats.applications} />
+              <StatRow label="ATS scores run" value={stats.ats_scores} />
+              <StatRow label="Skill gaps tracked" value={stats.skill_gaps} />
+
+              <p className="text-gray-400 text-xs uppercase tracking-wide mt-4 mb-2">AI Usage</p>
+              <StatRow
+                label="Tailor runs this month"
+                value={stats.ai_tailor_runs_this_month}
+              />
+              <StatRow
+                label="Tailor runs total"
+                value={stats.ai_tailor_runs_total}
+                sub={`≈ $${stats.estimated_cost_usd} estimated`}
+              />
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm text-center py-6">Failed to load stats</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Registration tab ───────────────────────────────────────────────────────────
 
@@ -54,17 +156,12 @@ function RegistrationTab() {
         onCancel={() => setRevokeConfirm(null)}
       />
 
-      {/* Permanent token */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
         <p className="text-gray-700 text-sm font-semibold mb-1">Permanent Registration Token</p>
         <p className="text-gray-400 text-xs mb-3">Set in your <code className="bg-gray-100 px-1 rounded">.env</code> — all users with this token can register.</p>
         <div className="flex items-center gap-2">
-          <input
-            type={showPermanent ? "text" : "password"}
-            value={permanentToken}
-            readOnly
-            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono text-gray-700"
-          />
+          <input type={showPermanent ? "text" : "password"} value={permanentToken} readOnly
+            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono text-gray-700" />
           <button onClick={() => setShowPermanent((v) => !v)}
             className="text-xs text-gray-500 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors shrink-0">
             {showPermanent ? "Hide" : "Show"}
@@ -76,10 +173,9 @@ function RegistrationTab() {
         </div>
       </div>
 
-      {/* Generate invite */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
         <p className="text-gray-700 text-sm font-semibold mb-1">Create Invite Token</p>
-        <p className="text-gray-400 text-xs mb-3">Single-use token that expires after the specified time. Share with one person.</p>
+        <p className="text-gray-400 text-xs mb-3">Single-use token that expires after the specified time.</p>
         <div className="flex items-center gap-3 mb-4">
           <div className="flex items-center gap-2">
             <input type="number" value={inviteHours} onChange={(e) => setInviteHours(Number(e.target.value))}
@@ -104,7 +200,6 @@ function RegistrationTab() {
         )}
       </div>
 
-      {/* Active invites */}
       {invites.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
           <p className="text-gray-700 text-sm font-semibold mb-3">Active Invites ({invites.length})</p>
@@ -130,6 +225,7 @@ function UsersTab() {
   const { user: adminUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [disableConfirm, setDisableConfirm] = useState<AdminUser | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<AdminUser | null>(null);
 
@@ -152,12 +248,16 @@ function UsersTab() {
     await adminApi.deleteUser(u.id);
     setUsers((prev) => prev.filter((x) => x.id !== u.id));
     setDeleteConfirm(null);
+    setSelectedUser(null);
   }
 
   if (loading) return <div className="text-gray-400 text-sm">Loading users…</div>;
 
   return (
     <div>
+      {selectedUser && (
+        <UserStatsPanel user={selectedUser} onClose={() => setSelectedUser(null)} />
+      )}
       <ConfirmModal
         open={!!disableConfirm} title="Disable account" danger
         message={`Disable ${disableConfirm?.display_name} (${disableConfirm?.email})? They will be logged out immediately.`}
@@ -167,7 +267,7 @@ function UsersTab() {
       />
       <ConfirmModal
         open={!!deleteConfirm} title="Delete account" danger
-        message={`Permanently delete ${deleteConfirm?.display_name} (${deleteConfirm?.email}) and all their data? This cannot be undone.`}
+        message={`Permanently delete ${deleteConfirm?.display_name} (${deleteConfirm?.email}) and all their data?`}
         confirmLabel="Delete permanently"
         onConfirm={() => void handleDelete(deleteConfirm!)}
         onCancel={() => setDeleteConfirm(null)}
@@ -188,7 +288,10 @@ function UsersTab() {
             {users.map((u) => {
               const isSelf = u.id === adminUser?.id;
               return (
-                <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={u.id}
+                  onClick={() => setSelectedUser(u)}
+                  className="hover:bg-gray-50 transition-colors cursor-pointer"
+                >
                   <td className="px-4 py-3">
                     <p className="text-gray-900 font-medium">{u.display_name}</p>
                     <p className="text-gray-400 text-xs">{u.email}</p>
@@ -204,7 +307,7 @@ function UsersTab() {
                       {u.is_disabled ? "Disabled" : "Active"}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     {isSelf ? (
                       <span className="text-gray-300 text-xs">You</span>
                     ) : (
@@ -226,6 +329,7 @@ function UsersTab() {
             })}
           </tbody>
         </table>
+        <p className="text-gray-400 text-xs px-4 py-2 border-t border-gray-100">Click a row to view account details</p>
       </div>
     </div>
   );
@@ -240,9 +344,12 @@ export default function AdminPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Admin Panel</h1>
-        <p className="text-gray-400 text-sm">Manage users and registration access.</p>
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-lg">🛡</span>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-400 text-sm">Manage users and registration access.</p>
+        </div>
       </div>
 
       <div className="flex gap-1 border-b border-gray-200 mb-6">
