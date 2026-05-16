@@ -1,10 +1,10 @@
 """Seed resume_templates from bundled .tex files in api/templates/."""
 from pathlib import Path
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.resume import ResumeTemplate
+from app.models.resume import BaseResume, ResumeTemplate
 from app.storage import generate_key, storage
 
 TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
@@ -93,13 +93,19 @@ TEMPLATE_META = {
 
 
 async def seed_templates(db: AsyncSession) -> None:
-    # Remove deprecated templates (only if not referenced by any base_resume)
+    # Remove deprecated templates — NULL out FK references first to avoid violation
     for slug in DEPRECATED_SLUGS:
         result = await db.execute(
             select(ResumeTemplate).where(ResumeTemplate.slug == slug)
         )
         old = result.scalar_one_or_none()
         if old:
+            # Detach any base resumes that still reference this template
+            await db.execute(
+                update(BaseResume)
+                .where(BaseResume.source_template_id == old.id)
+                .values(source_template_id=None)
+            )
             await db.execute(
                 delete(ResumeTemplate).where(ResumeTemplate.slug == slug)
             )
