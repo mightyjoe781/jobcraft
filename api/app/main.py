@@ -10,6 +10,7 @@ from app.routers import tailor as tailor_router
 from app.routers import ats as ats_router
 from app.routers import skill_gaps as skill_gaps_router
 from app.routers import dashboard as dashboard_router
+from app.routers import cover_letters as cover_letters_router
 from app.services.seed import seed_templates
 
 
@@ -36,6 +37,7 @@ app.include_router(tailor_router.router)
 app.include_router(ats_router.router)
 app.include_router(skill_gaps_router.router)
 app.include_router(dashboard_router.router)
+app.include_router(cover_letters_router.router)
 
 
 @app.get("/health")

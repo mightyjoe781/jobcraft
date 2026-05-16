@@ -13,6 +13,7 @@ import TailorPage from "./pages/tailor/TailorPage";
 import AtsPage from "./pages/ats/AtsPage";
 import SkillGapsPage from "./pages/skill-gaps/SkillGapsPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import CoverLettersPage from "./pages/cover-letters/CoverLettersPage";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -55,16 +56,7 @@ export default function App() {
         <Route path="/ats" element={<AtsPage />} />
         <Route path="/applications" element={<PlaceholderPage title="Applications" />} />
 
-        <Route
-          path="/cover-letters"
-          element={
-            <ComingSoonPage
-              feature="Cover Letters"
-              description="Generate targeted cover letters from your resume and job description."
-              phase="Phase 3 — Coming Soon"
-            />
-          }
-        />
+        <Route path="/cover-letters" element={<CoverLettersPage />} />
         <Route path="/skill-gaps" element={<SkillGapsPage />} />
         <Route
           path="/auto-apply"
