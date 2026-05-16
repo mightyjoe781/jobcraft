@@ -251,14 +251,14 @@ async def get_platform_stats(
 
     # ── Growth — user signups per week for last 8 weeks ───────────────────────
     # Use literal_column to avoid SQLAlchemy parameterising the date_trunc unit string
-    from sqlalchemy import literal_column
+    from sqlalchemy import literal_column, text as sa_text
     week_trunc   = func.date_trunc(literal_column("'week'"), User.created_at)
     eight_weeks_ago = now - timedelta(weeks=8)
     growth_result = await db.execute(
         select(week_trunc.label("week"), func.count().label("users"))
         .where(User.created_at >= eight_weeks_ago)
-        .group_by(week_trunc)
-        .order_by(week_trunc)
+        .group_by(sa_text('1'))
+        .order_by(sa_text('1'))
     )
     growth = [
         {
@@ -275,14 +275,14 @@ async def get_platform_stats(
     daily_tailor = await db.execute(
         select(day_trunc_activity.label("day"), func.count().label("count"))
         .where(ActivityLog.action == "tailored", ActivityLog.created_at >= week_ago)
-        .group_by(day_trunc_activity)
-        .order_by(day_trunc_activity)
+        .group_by(sa_text('1'))
+        .order_by(sa_text('1'))
     )
     daily_ats = await db.execute(
         select(day_trunc_ats.label("day"), func.count().label("count"))
         .where(AtsScore.status == "complete", AtsScore.created_at >= week_ago)
-        .group_by(day_trunc_ats)
-        .order_by(func.date_trunc("day", AtsScore.created_at))
+        .group_by(sa_text('1'))
+        .order_by(sa_text('1'))
     )
 
     tailor_by_day = {row.day: row.count for row in daily_tailor.all()}
