@@ -784,29 +784,35 @@ export default function ApplicationsPage() {
       {/* ── Left panel: job list ── */}
       <div className="w-72 shrink-0 border-r border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0 relative">
-          <span className="text-gray-900 font-semibold text-sm">
-            Applications
-            {filteredApps.length !== apps.length && (
-              <span className="ml-1.5 text-gray-400 font-normal text-xs">
-                {filteredApps.length}/{apps.length}
-              </span>
-            )}
-          </span>
+        <div className="px-4 pt-3 pb-2 border-b border-gray-200 shrink-0">
+          {/* Row 1: title + apply */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-900 font-semibold text-sm">Applications</span>
+            <Link
+              to="/apply"
+              className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
+            >
+              + Apply
+            </Link>
+          </div>
 
-          <div className="flex items-center gap-2">
-            {/* Filter button + popover */}
-            <div className="relative">
-              <button
-                onClick={() => setShowFilter((v) => !v)}
-                className={`text-xs px-2 py-1 rounded-lg border transition-colors ${
-                  hiddenStatuses.size > 0
-                    ? "border-indigo-300 bg-indigo-50 text-indigo-600"
-                    : "border-gray-200 text-gray-500 hover:text-gray-900"
-                }`}
-              >
-                Filter {hiddenStatuses.size > 0 && `· ${STATUS_ORDER.length - hiddenStatuses.size} shown`}
-              </button>
+          {/* Row 2: filter */}
+          <div className="relative">
+            <button
+              onClick={() => setShowFilter((v) => !v)}
+              className={`text-xs px-2 py-1 rounded-md border transition-colors w-full text-left ${
+                hiddenStatuses.size > 0
+                  ? "border-indigo-200 bg-indigo-50 text-indigo-600"
+                  : "border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              {hiddenStatuses.size > 0
+                ? `Showing ${STATUS_ORDER.length - hiddenStatuses.size} of ${STATUS_ORDER.length} statuses`
+                : "Filter by status"}
+              {filteredApps.length !== apps.length && (
+                <span className="ml-1 text-gray-400">· {filteredApps.length}/{apps.length}</span>
+              )}
+            </button>
 
               {showFilter && (
                 <>
@@ -849,14 +855,6 @@ export default function ApplicationsPage() {
                 </>
               )}
             </div>
-
-            <Link
-              to="/apply"
-              className="text-xs bg-accent hover:bg-accent-hover text-white rounded-lg px-3 py-1.5 transition-colors"
-            >
-              + Apply
-            </Link>
-          </div>
         </div>
 
         {/* Job list */}

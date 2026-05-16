@@ -66,10 +66,10 @@ export default function Sidebar() {
               to={item.to}
               className={({ isActive }) => {
                 if (item.primary) {
-                  return `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                  return `flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-accent text-white"
-                      : "bg-accent/10 text-accent hover:bg-accent/20"
+                      : "text-accent hover:bg-accent/10"
                   }`;
                 }
                 return `flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
