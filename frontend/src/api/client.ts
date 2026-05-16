@@ -55,14 +55,18 @@ export async function apiFetch<T>(
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
 
   if (res.status === 401 && retry) {
+    const hadRefreshToken = !!getRefreshToken();
     const newToken = await refreshTokens();
     if (newToken) {
       return apiFetch<T>(path, options, false);
     }
-    // Don't hard-redirect here — clearTokens() already called inside refreshTokens().
-    // Let React's RequireAuth / useAuth handle the unauthenticated state via
-    // normal React Router navigation (avoids full page reload → infinite loop).
-    throw Object.assign(new Error("Session expired"), { status: 401 });
+    if (hadRefreshToken) {
+      // Had a token but it was rejected — session truly expired.
+      // Tokens already cleared; let React handle the redirect.
+      throw Object.assign(new Error("Session expired"), { status: 401 });
+    }
+    // No refresh token at all — fall through to the normal error handler
+    // so the caller gets the real response body (e.g. "Invalid credentials").
   }
 
   if (!res.ok) {
