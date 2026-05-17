@@ -8,7 +8,7 @@ import redis.asyncio as aioredis
 from app.config import settings
 from app.services.security import check_jd, check_tex
 
-_client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+_client = anthropic.AsyncAnthropic(api_key=settings.jobcraft_anthropic_key)
 
 _SYSTEM_TEMPLATE = """\
 You are a resume tailoring assistant. Your only job is to modify a LaTeX resume \

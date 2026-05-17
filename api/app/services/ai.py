@@ -6,7 +6,7 @@ import anthropic
 from app.config import settings
 from app.services.security import check_tex
 
-_client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+_client = anthropic.AsyncAnthropic(api_key=settings.jobcraft_anthropic_key)
 
 _FILL_SYSTEM = """\
 You are a resume writing assistant. Your only job is to fill in placeholder \

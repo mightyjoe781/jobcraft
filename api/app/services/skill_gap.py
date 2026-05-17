@@ -4,7 +4,7 @@ import anthropic
 from app.config import settings
 from app.services.security import check_jd
 
-_client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+_client = anthropic.AsyncAnthropic(api_key=settings.jobcraft_anthropic_key)
 
 _SYSTEM = """\
 You are a career development advisor analyzing skill gaps between a candidate's \

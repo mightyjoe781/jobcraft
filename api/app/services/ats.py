@@ -7,7 +7,7 @@ import fitz  # pymupdf — pdfplumber removed (CVE-2025-64512 pickle RCE)
 from app.config import settings
 from app.services.security import check_jd
 
-_client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+_client = anthropic.AsyncAnthropic(api_key=settings.jobcraft_anthropic_key)
 
 _SYSTEM = """\
 You are an ATS (Applicant Tracking System) evaluation expert. \
