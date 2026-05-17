@@ -103,3 +103,5 @@ coverage/
 .Trashes
 ._*
 .claude/
+context/transcripts/
+.memsearch/
