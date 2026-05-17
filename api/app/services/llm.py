@@ -18,6 +18,18 @@ _PRICING: dict[str, dict[str, float]] = {
         "cache_read": 1.25 / 1_000_000,
         "cache_write": 0.0,
     },
+    "gpt-4o-mini": {
+        "input": 0.15 / 1_000_000,
+        "output": 0.60 / 1_000_000,
+        "cache_read": 0.075 / 1_000_000,
+        "cache_write": 0.0,
+    },
+    "claude-haiku-4-5-20251001": {
+        "input": 0.80 / 1_000_000,
+        "output": 4.00 / 1_000_000,
+        "cache_read": 0.08 / 1_000_000,
+        "cache_write": 1.00 / 1_000_000,
+    },
 }
 
 
@@ -48,7 +60,7 @@ class AnthropicProvider:
         if not settings.jobcraft_anthropic_key:
             raise ValueError("LLM_PROVIDER=anthropic requires JOBCRAFT_ANTHROPIC_KEY to be set in .env")
         self._client = anthropic.AsyncAnthropic(api_key=settings.jobcraft_anthropic_key)
-        self._model = "claude-sonnet-4-6"
+        self._model = settings.llm_model or "claude-sonnet-4-6"
 
     @property
     def model(self) -> str:
@@ -125,7 +137,7 @@ class OpenAIProvider:
             raise ValueError("LLM_PROVIDER=openai requires OPENAI_API_KEY to be set in .env")
         import openai
         self._client = openai.AsyncOpenAI(api_key=settings.openai_api_key)
-        self._model = "gpt-4o"
+        self._model = settings.llm_model or "gpt-4o-mini"
 
     @property
     def model(self) -> str:

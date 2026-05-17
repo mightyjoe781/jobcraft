@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     jobcraft_anthropic_key: str = ""
     openai_api_key: str = ""
     llm_provider: str = "anthropic"
+    llm_model: str = ""  # empty = provider default (claude-sonnet-4-6 / gpt-4o-mini)
     llm_result_cache_ttl_seconds: int = 604800  # 7 days; 0 = no TTL
     jwt_secret: str
     storage_backend: str = "local"
