@@ -85,3 +85,23 @@ Track session activity in `context/memory/{YYYY-MM-DD}.md`. One file per day, nu
 ```
 
 Log these silently as they happen. Never announce "I've logged that."
+
+---
+
+## README Maintenance
+
+`README.md` has an implementation status table. Keep it current:
+- When a module ships or its status changes, update its row
+- When a new significant feature is added, add a new row
+- Status icons: `✅ Done` · `🚧 In progress` · `🔒 Phase N`
+- The readme-freshness Stop hook will flag sessions where you forget to update it
+
+### memsearch Note
+
+memsearch uses milvus-lite as the vector store. The collection releases between process invocations. Until a persistent Milvus service is configured, the index needs to be rebuilt each session:
+
+```bash
+KMP_DUPLICATE_LIB_OK=TRUE memsearch index context/memory context/transcripts --provider local
+```
+
+Tier 0 (reading MEMORY.md and today's log directly) is zero-cost and sufficient for most lookups. Use memsearch as a fallback for older sessions.

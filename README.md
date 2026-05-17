@@ -217,19 +217,24 @@ Check the browser console (F12). Common cause: API not yet healthy. Wait 10 seco
 
 ## What's built (implementation status)
 
-| Module | Status |
-|---|---|
-| Auth (register, login, JWT refresh, profile) | Done |
-| Resume template gallery | Done |
-| Base resume editor (Monaco + PDF preview + snapshots) | Done |
-| AI fill assist | Done |
-| Resume tailoring (Claude + SSE progress + diff) | Done |
-| ATS scoring (sync-first + async fallback) | Done |
-| Skill gap analysis | Done |
-| Dashboard & analytics | Done |
-| Application tracker (Kanban + table) | Deferred |
-| Cover letter generator | Phase 3 |
-| Auto-apply engine | Phase 4 |
-| Job discovery | Phase 5 |
+| Module | Status | Notes |
+|---|---|---|
+| Auth — register, login, JWT, profile | ✅ Done | HMAC-SHA256 refresh tokens, timing-safe comparisons, registration token gate |
+| Admin panel — user management | ✅ Done | Disable/enable/delete users, per-user stats modal, platform statistics tab |
+| Admin — invite tokens | ✅ Done | Redis-backed single-use invites with TTL, visible in Registration tab |
+| 10 LaTeX resume templates | ✅ Done | Jake, Harshibar, Deedy, Awesome CV, ModernCV, AltaCV, Friggeri, sb2nov, Developer CV, Research CV |
+| Resume editor — Monaco + PDF preview | ✅ Done | Auto-save on blur, snapshot history, section navigator, AI fill assist |
+| Track a Job — 3-step wizard | ✅ Done | URL/JD fetch → base resume select with keyword suggestion → Tailor & Track |
+| Resume tailoring — Claude SSE | ✅ Done | Race-condition fix, SSE polling fallback when worker finishes before client subscribes |
+| ATS scoring per variant | ✅ Done | Stored score loaded from DB; Score button only if unseen; breakdown bars + keywords |
+| Skill gap analysis | ✅ Done | Claude structured output, per-gap status tracking |
+| Cover letter generator | ✅ Done | SSE streaming, tone selector, save/export PDF |
+| Applications hub — split panel | ✅ Done | Left list + right detail, 4 tabs per job, status filter, search |
+| Dashboard — pipeline + analytics | ✅ Done | Kanban drag-and-drop, funnel, ATS trend, demanded skills chart, activity feed |
+| Security hardening | ✅ Done | Rate limiting, AI budget cap, security headers, no stack traces, audit logs |
+| Landing page | ✅ Done | Public marketing page for unauthenticated visitors |
+| Session memory system | ✅ Done | CLAUDE.md + context/MEMORY.md + daily logs + transcript hook + memsearch |
+| Auto-apply engine | 🔒 Phase 4 | Locked in UI |
+| Job discovery / saved searches | 🔒 Phase 5 | Locked in UI |
 
-See `goals/requirement.md` for full product requirements and `tasks/prd-jobcraft.md` for the implementation PRD.
+See `tasks/` for PRDs. All local-dev security checklist items complete; HTTPS added at deploy time.
