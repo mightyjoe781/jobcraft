@@ -103,15 +103,19 @@ class AnthropicProvider:
             async for chunk in s.text_stream:
                 yield chunk
             if usage_out is not None:
-                msg = await s.get_final_message()
-                u = self._parse_usage(msg.usage)
-                usage_out.update(
-                    input_tokens=u.input_tokens,
-                    output_tokens=u.output_tokens,
-                    cache_read_tokens=u.cache_read_tokens,
-                    cache_write_tokens=u.cache_write_tokens,
-                    cost_usd=u.cost_usd,
-                )
+                try:
+                    # get_final_message() is synchronous in the Anthropic SDK
+                    msg = s.get_final_message()
+                    u = self._parse_usage(msg.usage)
+                    usage_out.update(
+                        input_tokens=u.input_tokens,
+                        output_tokens=u.output_tokens,
+                        cache_read_tokens=u.cache_read_tokens,
+                        cache_write_tokens=u.cache_write_tokens,
+                        cost_usd=u.cost_usd,
+                    )
+                except Exception:
+                    pass  # usage tracking is best-effort; don't break streaming
 
 
 class OpenAIProvider:

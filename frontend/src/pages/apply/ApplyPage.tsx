@@ -29,18 +29,6 @@ type ProgressStep = { message: string; done: boolean };
 // Helpers
 // ---------------------------------------------------------------------------
 
-function scoreMatch(resume: BaseResume, jdText: string): number {
-  const jdWords = new Set(
-    jdText
-      .toLowerCase()
-      .split(/\W+/)
-      .filter((w) => w.length > 3)
-  );
-  const resumeWords = (resume.label + " " + resume.source_type)
-    .toLowerCase()
-    .split(/\W+/);
-  return resumeWords.filter((w) => jdWords.has(w)).length;
-}
 
 function sourceTypeLabel(sourceType: string): string {
   if (sourceType === "template") return "From template";
@@ -117,7 +105,6 @@ export default function ApplyPage() {
   // Step 2 state
   const [bases, setBases] = useState<BaseResume[]>([]);
   const [selectedBase, setSelectedBase] = useState<BaseResume | null>(null);
-  const [suggestedId, setSuggestedId] = useState<string | null>(null);
 
   // Step 3 state
   const [aggressiveness, setAggressiveness] = useState<AggressivenessValue>("balanced");
@@ -164,23 +151,9 @@ export default function ApplyPage() {
       });
   }, [jobIdParam]);
 
-  // Compute keyword suggestion whenever job changes and bases are loaded
+  // Auto-select if only one resume
   useEffect(() => {
     if (!job || bases.length === 0) return;
-
-    const jd = job.jd_text ?? "";
-    let bestId: string | null = null;
-    let bestScore = -1;
-    for (const b of bases) {
-      const s = scoreMatch(b, jd);
-      if (s > bestScore) {
-        bestScore = s;
-        bestId = b.id;
-      }
-    }
-    setSuggestedId(bestId);
-
-    // Auto-select if only one resume
     if (bases.length === 1) {
       setSelectedBase(bases[0]);
       setStep(3);
@@ -635,7 +608,6 @@ export default function ApplyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {bases.map((b) => {
                 const isSelected = selectedBase?.id === b.id;
-                const isSuggested = b.id === suggestedId;
                 return (
                   <button
                     key={b.id}
@@ -650,11 +622,6 @@ export default function ApplyPage() {
                       <span className="text-gray-900 font-medium text-sm leading-snug">
                         {b.label}
                       </span>
-                      {isSuggested && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 font-medium shrink-0">
-                          Suggested
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-400">
                       <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-500">
