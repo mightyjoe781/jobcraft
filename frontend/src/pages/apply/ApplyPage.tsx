@@ -329,7 +329,7 @@ export default function ApplyPage() {
             <div className="space-y-2">
               <PdfDownloadLink
                 apiPath={variantPdfUrl(variantId)}
-                filename="tailored-resume.pdf"
+                filename={`${company ? company.toLowerCase().replace(/\s+/g, "-") : "tailored"}-resume.pdf`}
                 className="block w-full bg-accent hover:bg-accent-hover text-white text-sm rounded-lg py-2.5 text-center transition-colors"
               >
                 Download PDF
