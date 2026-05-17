@@ -1,13 +1,10 @@
-"""Cover letter generation via Claude streaming."""
+"""Cover letter generation via the configured LLM provider (streaming)."""
 from datetime import datetime, timezone
 from pathlib import Path
 
-import anthropic
-
-from app.config import settings
+from app.services.llm import get_llm_provider
+from app.services.llm_cache import cache_key, get_cached, set_cached
 from app.services.security import check_jd
-
-_client = anthropic.AsyncAnthropic(api_key=settings.jobcraft_anthropic_key)
 
 _TEMPLATE_PATH = Path(__file__).parent.parent / "templates" / "cover_letter.html"
 
@@ -17,7 +14,7 @@ _TONE_GUIDANCE = {
     "enthusiastic": "enthusiastic and energetic — convey genuine excitement for the role; still professional",
 }
 
-_SYSTEM = """\
+_SYSTEM_TEXT = """\
 You are an expert cover letter writer. Write a concise, targeted cover letter \
 for a job application — exactly 3 paragraphs, no salutation, no sign-off.
 
@@ -45,26 +42,50 @@ async def generate_cover_letter(
     resume_text: str,
     tone: str,
     personal_hook: str | None,
+    usage_out: dict | None = None,
 ) -> str:
-    """Stream-generate cover letter and return full text."""
+    """
+    Async generator that yields cover letter text chunks.
+    If usage_out is provided it will be populated with token counts after streaming.
+    Returns cached result as a single chunk when available.
+    """
     flag = check_jd(jd_text)
     if flag:
         raise ValueError(f"Job description rejected: {flag}")
+
+    provider = get_llm_provider()
+    key = cache_key("cover_letter", provider.provider_name, provider.model, {
+        "jd_text": jd_text,
+        "resume_text": resume_text,
+        "tone": tone,
+        "personal_hook": personal_hook or "",
+    })
+    cached = await get_cached(key)
+    if cached:
+        # Replay cached text as a single chunk; usage is zero (cache hit)
+        if usage_out is not None:
+            usage_out.update(
+                input_tokens=0, output_tokens=0,
+                cache_read_tokens=0, cache_write_tokens=0,
+                cost_usd=0.0, result_cache_hit=True,
+            )
+        yield cached["text"]
+        return
 
     hook_block = (
         f"\n<personal_hook>\n{personal_hook}\n</personal_hook>\n"
         "Weave the personal hook naturally into the opening paragraph."
         if personal_hook else ""
     )
-
-    system = _SYSTEM.format(tone_guidance=_TONE_GUIDANCE.get(tone, _TONE_GUIDANCE["formal"]))
-
-    full_text = ""
-    async with _client.messages.stream(
-        model="claude-sonnet-4-6",
-        max_tokens=600,
-        system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-        messages=[{
+    system = [
+        {
+            "type": "text",
+            "cache_control": {"type": "ephemeral"},
+            "text": _SYSTEM_TEXT.format(tone_guidance=_TONE_GUIDANCE.get(tone, _TONE_GUIDANCE["formal"])),
+        }
+    ]
+    messages = [
+        {
             "role": "user",
             "content": (
                 f"<job_description>\n{jd_text}\n</job_description>\n\n"
@@ -72,14 +93,25 @@ async def generate_cover_letter(
                 f"{hook_block}\n\n"
                 "Write the cover letter body."
             ),
-        }],
-    ) as stream:
-        async for chunk in stream.text_stream:
-            full_text += chunk
-            yield chunk
+        }
+    ]
+
+    full_text = ""
+    async for chunk in provider.stream(
+        system=system,
+        messages=messages,
+        max_tokens=600,
+        usage_out=usage_out,
+    ):
+        full_text += chunk
+        yield chunk
 
     if not full_text.strip():
-        raise ValueError("Claude returned an empty response")
+        raise ValueError("LLM returned an empty response")
+
+    await set_cached(key, {"text": full_text})
+    if usage_out is not None and "result_cache_hit" not in usage_out:
+        usage_out["result_cache_hit"] = False
 
 
 def render_to_pdf(body_text: str, sender_name: str, sender_contact: str = "") -> bytes:

@@ -1,4 +1,4 @@
-"""Admin-only endpoints — user management and registration token/invite management."""
+"""Admin-only endpoints — user management, registration tokens, and AI usage stats."""
 import hmac
 import secrets
 import uuid
@@ -319,4 +319,142 @@ async def get_platform_stats(
         },
         "growth": growth,
         "daily_activity": daily_activity,
+    }
+
+
+@router.get("/stats/ai-usage")
+async def get_ai_usage_stats(
+    _: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Real token usage and cost breakdown from ai_usage_logs."""
+    from sqlalchemy import func, and_, literal_column, text as sa_text
+    from datetime import timedelta
+    from app.models.ai_usage import AiUsageLog
+
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    thirty_days_ago = now - timedelta(days=30)
+
+    async def scalar(stmt):
+        r = await db.execute(stmt)
+        return r.scalar_one()
+
+    # ── Monthly totals ─────────────────────────────────────────────────────────
+    total_calls_month = await scalar(
+        select(func.count(AiUsageLog.id)).where(AiUsageLog.created_at >= month_start)
+    )
+    total_cost_month = float(await scalar(
+        select(func.coalesce(func.sum(AiUsageLog.estimated_cost_usd), 0.0))
+        .where(AiUsageLog.created_at >= month_start)
+    ))
+    total_input_tokens = int(await scalar(
+        select(func.coalesce(func.sum(AiUsageLog.input_tokens), 0))
+        .where(AiUsageLog.created_at >= month_start)
+    ))
+    total_output_tokens = int(await scalar(
+        select(func.coalesce(func.sum(AiUsageLog.output_tokens), 0))
+        .where(AiUsageLog.created_at >= month_start)
+    ))
+    total_cache_read_tokens = int(await scalar(
+        select(func.coalesce(func.sum(AiUsageLog.cache_read_tokens), 0))
+        .where(AiUsageLog.created_at >= month_start)
+    ))
+    cache_hits = int(await scalar(
+        select(func.count(AiUsageLog.id))
+        .where(AiUsageLog.created_at >= month_start, AiUsageLog.result_cache_hit == True)  # noqa
+    ))
+
+    # ── Per-feature breakdown ──────────────────────────────────────────────────
+    feature_rows = await db.execute(
+        select(
+            AiUsageLog.feature,
+            func.count().label("calls"),
+            func.coalesce(func.sum(AiUsageLog.estimated_cost_usd), 0.0).label("cost"),
+            func.coalesce(func.sum(AiUsageLog.input_tokens), 0).label("input_tokens"),
+            func.coalesce(func.sum(AiUsageLog.output_tokens), 0).label("output_tokens"),
+            func.count().filter(AiUsageLog.result_cache_hit == True).label("cache_hits"),  # noqa
+        )
+        .where(AiUsageLog.created_at >= month_start)
+        .group_by(AiUsageLog.feature)
+        .order_by(func.sum(AiUsageLog.estimated_cost_usd).desc())
+    )
+    per_feature = [
+        {
+            "feature": row.feature,
+            "calls": row.calls,
+            "cost_usd": round(float(row.cost), 4),
+            "input_tokens": int(row.input_tokens),
+            "output_tokens": int(row.output_tokens),
+            "cache_hit_rate": round(row.cache_hits / row.calls, 3) if row.calls else 0.0,
+        }
+        for row in feature_rows.all()
+    ]
+
+    # ── Top 10 users by cost this month ───────────────────────────────────────
+    top_users_rows = await db.execute(
+        select(
+            AiUsageLog.user_id,
+            User.email,
+            User.display_name,
+            func.count().label("calls"),
+            func.coalesce(func.sum(AiUsageLog.estimated_cost_usd), 0.0).label("cost"),
+        )
+        .join(User, AiUsageLog.user_id == User.id)
+        .where(AiUsageLog.created_at >= month_start)
+        .group_by(AiUsageLog.user_id, User.email, User.display_name)
+        .order_by(func.sum(AiUsageLog.estimated_cost_usd).desc())
+        .limit(10)
+    )
+    top_users = [
+        {
+            "user_id": str(row.user_id),
+            "email": row.email,
+            "display_name": row.display_name,
+            "calls": row.calls,
+            "cost_usd": round(float(row.cost), 4),
+        }
+        for row in top_users_rows.all()
+    ]
+
+    # ── Daily trend — last 30 days ─────────────────────────────────────────────
+    day_trunc = func.date_trunc(literal_column("'day'"), AiUsageLog.created_at)
+    daily_rows = await db.execute(
+        select(
+            day_trunc.label("day"),
+            func.count().label("calls"),
+            func.coalesce(func.sum(AiUsageLog.estimated_cost_usd), 0.0).label("cost"),
+            func.coalesce(func.sum(AiUsageLog.input_tokens + AiUsageLog.output_tokens), 0).label("tokens"),
+            func.count().filter(AiUsageLog.result_cache_hit == True).label("cache_hits"),  # noqa
+        )
+        .where(AiUsageLog.created_at >= thirty_days_ago)
+        .group_by(sa_text("1"))
+        .order_by(sa_text("1"))
+    )
+    daily_trend = [
+        {
+            "date": row.day.strftime("%b %d"),
+            "calls": row.calls,
+            "cost_usd": round(float(row.cost), 4),
+            "tokens": int(row.tokens),
+            "cache_hits": row.cache_hits,
+        }
+        for row in daily_rows.all()
+    ]
+
+    cache_hit_rate = round(cache_hits / total_calls_month, 3) if total_calls_month else 0.0
+
+    return {
+        "this_month": {
+            "calls": total_calls_month,
+            "cost_usd": round(total_cost_month, 4),
+            "input_tokens": total_input_tokens,
+            "output_tokens": total_output_tokens,
+            "cache_read_tokens": total_cache_read_tokens,
+            "cache_hit_rate": cache_hit_rate,
+            "cache_hits": cache_hits,
+        },
+        "per_feature": per_feature,
+        "top_users": top_users,
+        "daily_trend": daily_trend,
     }

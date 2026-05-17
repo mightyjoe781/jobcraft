@@ -361,7 +361,7 @@ async def ai_fill(
     tex = (await storage.get(resume.tex_source_path)).decode()
 
     from app.services.ai import fill_resume_placeholders
-    filled = await fill_resume_placeholders(tex, body.background_text, current_user.id)
+    filled = await fill_resume_placeholders(tex, body.background_text, current_user.id, db=db)
     return AiFillResponse(filled_tex=filled)
 
 

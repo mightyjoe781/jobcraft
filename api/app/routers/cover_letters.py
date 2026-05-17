@@ -106,12 +106,18 @@ async def create_and_stream(
     await db.refresh(cl)
     cl_id = cl.id
 
+    user_id = current_user.id
+
     async def stream():
+        import time
         import json
         from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession as _AsyncSession
         from app.config import settings as _s
+        from app.services.llm import TokenUsage, log_ai_usage
 
         full_text = ""
+        usage_out: dict = {}
+        t0 = time.monotonic()
         yield f"event: id\ndata: {json.dumps({'cover_letter_id': str(cl_id)})}\n\n"
 
         try:
@@ -120,9 +126,12 @@ async def create_and_stream(
                 resume_text=resume_text,
                 tone=body.tone,
                 personal_hook=body.personal_hook,
+                usage_out=usage_out,
             ):
                 full_text += chunk
                 yield f"event: chunk\ndata: {json.dumps({'text': chunk})}\n\n"
+
+            duration_ms = int((time.monotonic() - t0) * 1000)
 
             # Use a fresh engine/session to persist — the request session may
             # be in an inconsistent state after streaming
@@ -136,6 +145,17 @@ async def create_and_stream(
                     if saved:
                         saved.body_text = full_text
                         await session.commit()
+                    usage = TokenUsage(
+                        input_tokens=usage_out.get("input_tokens", 0),
+                        output_tokens=usage_out.get("output_tokens", 0),
+                        cache_read_tokens=usage_out.get("cache_read_tokens", 0),
+                        cache_write_tokens=usage_out.get("cache_write_tokens", 0),
+                        cost_usd=usage_out.get("cost_usd", 0.0),
+                    )
+                    await log_ai_usage(
+                        session, user_id, "cover_letter", usage,
+                        duration_ms, cache_hit=usage_out.get("result_cache_hit", False),
+                    )
             finally:
                 await engine.dispose()
 

@@ -88,6 +88,7 @@ async def _async_tailor(
                     aggressiveness=aggressiveness,
                     custom_instruction=custom_instruction,
                     user_id=user_id,
+                    db=db,
                 )
             except Exception as exc:
                 await publish("error", {"message": str(exc)})
@@ -161,7 +162,7 @@ async def _async_ats(score_id: uuid.UUID, resume_text: str, jd_text: str):
             if not score_row:
                 return
             try:
-                data = await score_resume(resume_text, jd_text)
+                data = await score_resume(resume_text, jd_text, db=db, user_id=score_row.user_id)
                 score_row.status = "complete"
                 score_row.overall_score = data["overall_score"]
                 score_row.breakdown_json = data["breakdown"]

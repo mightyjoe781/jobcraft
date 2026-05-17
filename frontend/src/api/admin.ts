@@ -57,3 +57,45 @@ export interface AdminStats {
 }
 
 export const getAdminStats = () => apiFetch<AdminStats>("/admin/stats");
+
+export interface AiFeatureStat {
+  feature: string;
+  calls: number;
+  cost_usd: number;
+  input_tokens: number;
+  output_tokens: number;
+  cache_hit_rate: number;
+}
+
+export interface AiTopUser {
+  user_id: string;
+  email: string;
+  display_name: string;
+  calls: number;
+  cost_usd: number;
+}
+
+export interface AiDailyTrend {
+  date: string;
+  calls: number;
+  cost_usd: number;
+  tokens: number;
+  cache_hits: number;
+}
+
+export interface AiUsageStats {
+  this_month: {
+    calls: number;
+    cost_usd: number;
+    input_tokens: number;
+    output_tokens: number;
+    cache_read_tokens: number;
+    cache_hit_rate: number;
+    cache_hits: number;
+  };
+  per_feature: AiFeatureStat[];
+  top_users: AiTopUser[];
+  daily_trend: AiDailyTrend[];
+}
+
+export const getAiUsageStats = () => apiFetch<AiUsageStats>("/admin/stats/ai-usage");

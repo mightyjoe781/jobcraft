@@ -46,7 +46,7 @@ async def analyze(
     tex = (await storage.get(base.tex_source_path)).decode()
 
     try:
-        gaps = await analyze_gaps(resume_text=tex, jd_text=job.jd_text)
+        gaps = await analyze_gaps(resume_text=tex, jd_text=job.jd_text, db=db, user_id=current_user.id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

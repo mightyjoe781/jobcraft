@@ -10,7 +10,7 @@ AI-powered resume tailoring and job application workspace. Paste a job descripti
 |---|---|
 | Frontend | React 18, Vite, TypeScript, TailwindCSS |
 | Backend | FastAPI (Python 3.12), SQLAlchemy 2, Alembic |
-| AI | Anthropic Claude (`claude-sonnet-4-6`) with prompt caching |
+| AI | Anthropic Claude (`claude-sonnet-4-6`) or OpenAI GPT-4o — provider set via `LLM_PROVIDER` env var |
 | PDF rendering | Full `texlive` Docker sidecar (`pdflatex --no-shell-escape`) |
 | Database | PostgreSQL 16 |
 | Queue | Celery + Redis |
@@ -232,6 +232,7 @@ Check the browser console (F12). Common cause: API not yet healthy. Wait 10 seco
 | Applications hub — split panel | ✅ Done | Left list + right detail, 4 tabs per job, status filter, search |
 | Dashboard — pipeline + analytics | ✅ Done | Kanban drag-and-drop, funnel, ATS trend, demanded skills chart, activity feed |
 | Security hardening | ✅ Done | Rate limiting, AI budget cap, security headers, no stack traces, audit logs |
+| LLM cost optimization | ✅ Done | Redis result cache (content-hash), real token tracking in `ai_usage_logs`, multi-provider (Anthropic/OpenAI) |
 | Landing page | ✅ Done | Public marketing page for unauthenticated visitors |
 | Session memory system | ✅ Done | CLAUDE.md + context/MEMORY.md + daily logs + transcript hook + memsearch |
 | Auto-apply engine | 🔒 Phase 4 | Locked in UI |

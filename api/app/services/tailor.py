@@ -1,14 +1,14 @@
-"""AI resume tailoring — calls Claude and pushes SSE events via Redis."""
+"""AI resume tailoring — calls configured LLM and pushes SSE events via Redis."""
 import json
+import time
 import uuid
 
-import anthropic
 import redis.asyncio as aioredis
 
 from app.config import settings
+from app.services.llm import TokenUsage, get_llm_provider, log_ai_usage
+from app.services.llm_cache import cache_key, get_cached, set_cached
 from app.services.security import check_jd, check_tex
-
-_client = anthropic.AsyncAnthropic(api_key=settings.jobcraft_anthropic_key)
 
 _SYSTEM_TEMPLATE = """\
 You are a resume tailoring assistant. Your only job is to modify a LaTeX resume \
@@ -86,6 +86,7 @@ async def run_tailoring(
     aggressiveness: str,
     custom_instruction: str | None,
     user_id: uuid.UUID,
+    db=None,
 ) -> dict:
     """
     Run the full tailoring pipeline. Called from the Celery worker.
@@ -111,9 +112,21 @@ async def run_tailoring(
     await progress("Identifying keyword gaps…")
 
     custom_line = f"\nAdditional instruction: {custom_instruction}" if custom_instruction else ""
-    system_prompt = _SYSTEM_TEMPLATE.format(
-        aggressiveness=aggressiveness, custom=custom_line
-    )
+    system_prompt = _SYSTEM_TEMPLATE.format(aggressiveness=aggressiveness, custom=custom_line)
+
+    provider = get_llm_provider()
+    key = cache_key("tailor", provider.provider_name, provider.model, {
+        "tex_source": tex_source,
+        "jd_text": jd_text,
+        "aggressiveness": aggressiveness,
+        "custom_instruction": custom_instruction or "",
+    })
+    cached = await get_cached(key)
+    if cached:
+        await progress("Compiling PDF…")
+        if db is not None:
+            await log_ai_usage(db, user_id, "tailor", TokenUsage(), 0, cache_hit=True)
+        return cached["result"]
 
     await progress(
         "Rewriting bullet points…"
@@ -121,9 +134,8 @@ async def run_tailoring(
         else "Reordering sections…"
     )
 
-    response = await _client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4096,
+    t0 = time.monotonic()
+    response = await provider.create(
         system=[
             {
                 "type": "text",
@@ -131,8 +143,6 @@ async def run_tailoring(
                 "cache_control": {"type": "ephemeral"},
             }
         ],
-        tools=[_TAILOR_TOOL],
-        tool_choice={"type": "tool", "name": "tailored_resume"},
         messages=[
             {
                 "role": "user",
@@ -143,13 +153,21 @@ async def run_tailoring(
                 ),
             }
         ],
+        tools=[_TAILOR_TOOL],
+        tool_choice={"type": "tool", "name": "tailored_resume"},
+        max_tokens=4096,
     )
+    duration_ms = int((time.monotonic() - t0) * 1000)
 
-    tool_block = next(b for b in response.content if b.type == "tool_use")
-    result = tool_block.input
+    result = response.content  # type: ignore[assignment]
 
     if result.get("injection_detected"):
         await _publish(channel, "injection_detected", {})
+
+    await set_cached(key, {"result": result})
+
+    if db is not None:
+        await log_ai_usage(db, user_id, "tailor", response.usage, duration_ms)
 
     await progress("Compiling PDF…")
     return result

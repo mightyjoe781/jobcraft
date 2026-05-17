@@ -5,7 +5,10 @@ class Settings(BaseSettings):
     database_url: str
     redis_url: str
     latex_service_url: str
-    jobcraft_anthropic_key: str
+    jobcraft_anthropic_key: str = ""
+    openai_api_key: str = ""
+    llm_provider: str = "anthropic"
+    llm_result_cache_ttl_seconds: int = 604800  # 7 days; 0 = no TTL
     jwt_secret: str
     storage_backend: str = "local"
     storage_local_root: str = "/storage"

@@ -6,6 +6,7 @@ from app.models.ats import AtsScore
 from app.models.cover_letter import CoverLetter
 from app.models.skill_gap import SkillGap
 from app.models.activity import ActivityLog
+from app.models.ai_usage import AiUsageLog
 
 __all__ = [
     "User", "RefreshToken",
@@ -16,4 +17,5 @@ __all__ = [
     "CoverLetter",
     "SkillGap",
     "ActivityLog",
+    "AiUsageLog",
 ]

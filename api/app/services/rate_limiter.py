@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models.activity import ActivityLog
 from app.models.user import User
 
 
@@ -38,23 +37,22 @@ async def _check_rate_limit(user_id: uuid.UUID, key: str, limit: int) -> None:
 
 
 async def _check_daily_budget(user_id: uuid.UUID, db: AsyncSession) -> None:
-    """S-09: block AI calls if user has exceeded their daily USD budget."""
+    """Block AI calls if user has exceeded their daily USD budget (real cost from ai_usage_logs)."""
     if settings.daily_ai_budget_usd <= 0:
         return  # unlimited
 
+    from app.models.ai_usage import AiUsageLog
+
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    # Each tailor run costs ~$0.04 (rough estimate stored in activity log)
     result = await db.execute(
-        select(func.count(ActivityLog.id)).where(
-            ActivityLog.user_id == user_id,
-            ActivityLog.action == "tailored",
-            ActivityLog.created_at >= today_start,
+        select(func.coalesce(func.sum(AiUsageLog.estimated_cost_usd), 0.0)).where(
+            AiUsageLog.user_id == user_id,
+            AiUsageLog.created_at >= today_start,
         )
     )
-    tailor_count = result.scalar_one()
-    estimated_cost = tailor_count * 0.04
+    total_cost = float(result.scalar_one())
 
-    if estimated_cost >= settings.daily_ai_budget_usd:
+    if total_cost >= settings.daily_ai_budget_usd:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="daily_ai_budget_exceeded",
