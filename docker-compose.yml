@@ -36,7 +36,7 @@ services:
   api:
     build: ./api
     ports:
-      - "127.0.0.1:8000:8000"   # loopback only — Nginx proxies /api
+      - "127.0.0.1:8001:8000"   # loopback only — Nginx proxies /api
     env_file: .env
     environment:
       DATABASE_URL: postgresql+asyncpg://jobcraft:${POSTGRES_PASSWORD}@postgres:5432/jobcraft
