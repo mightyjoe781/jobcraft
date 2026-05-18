@@ -3,10 +3,9 @@ import re
 
 _JD_INJECTION_PATTERNS = [
     r"ignore\s+(previous|above|all)\s+instructions?",
-    r"disregard.*system",
+    r"disregard.*system\s+prompt",
     r"\byou\s+are\s+now\b",
     r"\bnew\s+persona\b",
-    r"\bact\s+as\b",
     r"\bjailbreak\b",
     r"\bdo\s+anything\s+now\b",
     r"repeat\s+(your|the)\s+(system|instructions?|prompt)",
@@ -15,9 +14,6 @@ _JD_INJECTION_PATTERNS = [
     r"<\|.*\|>",
     r"\[INST\]",
     r"<<SYS>>",
-    r"output\s+json",
-    r"return\s+only",
-    r"respond\s+with\s+only",
 ]
 
 _TEX_INJECTION_PATTERNS = [
