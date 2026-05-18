@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../../api/client";
 import { createJob, fetchJd, startTailoring } from "../../api/tailor";
+import { createApplication } from "../../api/applications";
 import type { Job } from "../../api/tailor";
 import { listBaseResumes, variantPdfUrl } from "../../api/resumes";
 import type { BaseResume } from "../../api/resumes";
@@ -744,7 +745,10 @@ export default function ApplyPage() {
 
               <div className="text-center pt-2">
                 <button
-                  onClick={() => navigate("/applications")}
+                  onClick={async () => {
+                    if (job) await createApplication(job.id).catch(() => {});
+                    navigate("/applications");
+                  }}
                   className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
                 >
                   Skip tailoring — track this job without a variant
