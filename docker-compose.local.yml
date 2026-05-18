@@ -1,0 +1,12 @@
+services:
+  latex:
+    ports:
+      - "8001:8001"   # exposed for local debugging
+
+  api:
+    ports:
+      - "8000:8000"   # open binding for local dev
+
+  frontend:
+    ports:
+      - "3000:80"     # open binding — access at http://localhost:3000

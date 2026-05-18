@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # S-23 fix: no host port mapping — only reachable within Docker network
+    # no host port — only reachable within Docker network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U jobcraft"]
       interval: 5s
@@ -17,7 +17,7 @@ services:
   redis:
     image: redis:7-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD}
-    # S-03 fix: Redis requires password; no host port exposure
+    # no host port — only reachable within Docker network
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
@@ -26,8 +26,7 @@ services:
 
   latex:
     build: ./latex
-    ports:
-      - "8001:8001"
+    # no host port — only api/worker reach it via Docker network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 10s
@@ -37,7 +36,7 @@ services:
   api:
     build: ./api
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"   # loopback only — Nginx proxies /api
     env_file: .env
     environment:
       DATABASE_URL: postgresql+asyncpg://jobcraft:${POSTGRES_PASSWORD}@postgres:5432/jobcraft
@@ -74,7 +73,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3000:80"
+      - "127.0.0.1:3000:80"    # loopback only — Nginx proxies port 13007 here
     depends_on:
       - api
 
